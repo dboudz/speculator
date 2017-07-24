@@ -10,14 +10,12 @@ import krakenex
 import time
 from pushbullet import Pushbullet
 import json,requests
-from configobj import ConfigObj
-
+import os
 # Init parameters
-config = config = ConfigObj('./config')
-api_key=config['api_key']
-api_sign=config['api_sign']
-key_pushbullet=config['key_pushbullet']
-SERVER_NAME=config['SERVER_NAME']
+api_key=os.environ['API_KEY']
+api_sign=os.environ['API_SIGN']
+key_pushbullet=os.environ['KEY_PUSHBULLET']
+SERVER_NAME=os.environ['SERVER_NAME']
 
 def init():
     print("(Re)Initializing")

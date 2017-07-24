@@ -1,5 +1,5 @@
 krakenex
 pushbullet.py
-configobj
 simplejson
 pandas
+SQLAlchemy

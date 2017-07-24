@@ -11,17 +11,14 @@ import persistenceHandler
 import time
 import datetime
 import socket,http
-from configobj import ConfigObj
-import sys
+import sys,os
 
 # Init parameters
-config = config = ConfigObj('./config')
-STEP_WAIT=int(config['STEP_WAIT'])
-STEP_NOTIFY=int(config['STEP_NOTIFY'])
-CRAWLED_CURRENCIES=config['CRAWLED_CURRENCIES']
-SERVER_NAME=config['SERVER_NAME']
+STEP_WAIT=int(os.environ['STEP_WAIT'])
+STEP_NOTIFY=int(os.environ['STEP_NOTIFY'])
+CRAWLED_CURRENCIES=os.environ['CRAWLED_CURRENCIES']
+SERVER_NAME=os.environ['SERVER_NAME']
 sys.stdout.flush()
-
 
 cmpt=0
 while(1==1):

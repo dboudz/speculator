@@ -5,15 +5,14 @@ Created on Tue Jul 11 21:20:20 2017
 
 @author: dboudeau
 """
-import sqlite3
-from configobj import ConfigObj
+from sqlalchemy import create_engine
 import pandas
+import os
+
 # Init parameters
-config = config = ConfigObj('./config')
-db_filename=config['db_filename']
-conn = sqlite3.connect(db_filename,timeout=30000)
-
-
+print(os.environ["DATABASE_URL"])
+engine = create_engine(os.environ["DATABASE_URL"])    
+conn = engine.connect()
 
 def getCrawling(currency=""):
     if(len(currency)>0):
@@ -26,53 +25,46 @@ def initDB():
     # Create table for currency crawling
     print("create if not exist table crawling")
     sql_create_crawling_table="""
-    create table 
+    create table if not exists
     crawling(
-        currency_date timestamp,
-        currency text,
-        ask_price real,
-        ask_whole_lot_volume real,
-        ask_lot_volume real,
-        bid_price real,
-        bid_whole_lot_volume real,
-        bid_lot_volume real,
-        last_trade_closed_price real,
-        last_trade_closed_volume real,
-        volume_today real,
-        volume_last24h real,
-        volume_weight_today real,
-        volume_weight_24h real,
-        number_of_trades_today real,
-        number_of_trades_24h real,
-        low_today real,
-        low_24h real,
-        high_today real,
-        high_24h real,
-        opening_price real
+        currency_date timestamp without time zone,
+        currency character varying,
+        ask_price float,
+        ask_whole_lot_volume float,
+        ask_lot_volume float,
+        bid_price float,
+        bid_whole_lot_volume float,
+        bid_lot_volume float,
+        last_trade_closed_price float,
+        last_trade_closed_volume float,
+        volume_today float,
+        volume_last24h float,
+        volume_weight_today float,
+        volume_weight_24h float,
+        number_of_trades_today float,
+        number_of_trades_24h float,
+        low_today float,
+        low_24h float,
+        high_today float,
+        high_24h float,
+        opening_price float
     );
     """
-    try:
-        conn.execute(sql_create_crawling_table)
-        print("Table created")
-    except sqlite3.OperationalError:
-        print("Table already created")
-        
+    conn.execute(sql_create_crawling_table)
+
         
     # Create table for currency crawling
     print("create if not exist table buying signals")
     sql_create_crawling_table="""
-    create table 
+    create table if not exists
     buying_signal(
-        buying_signal_date timestamp,
-        currency text,
-        ask_price real
+        buying_signal_date timestamp without time zone,
+        currency character varying,
+        ask_price float
     );
     """
-    try:
-        conn.execute(sql_create_crawling_table)
-        print("Table created")
-    except sqlite3.OperationalError:
-        print("Table already created")
+    conn.execute(sql_create_crawling_table)
+
     
     #df = pd.read_sql_query("select * from lol2 limit 5;", conn)
     
@@ -106,7 +98,6 @@ def storeBuyingSignal(timestamp,currency,ask_price):
         sql_insert=""" INSERT INTO buying_signal(buying_signal_date,currency,ask_price) VALUES
         ('"""+str(timestamp)+"""','"""+str(currency)+"""',"""+str(ask_price)+""")"""
         conn.execute(sql_insert)
-        conn.commit()
         return(1)
     
 
@@ -137,8 +128,8 @@ def storeCurrency(currency,ask_array,bid_array,last_trade_closed_array,volume_ar
     )
     values
     (
-    datetime('now'),
-    """+'"'+currency+'"'+""",
+    now(),
+    '"""+currency+"""',
     """+str(ask_array[0])+""",
     """+str(ask_array[1])+""",
     """+str(ask_array[2])+""",
@@ -161,5 +152,4 @@ def storeCurrency(currency,ask_array,bid_array,last_trade_closed_array,volume_ar
     )
     """
     conn.execute(sql_insert)
-    conn.commit()
 initDB()
