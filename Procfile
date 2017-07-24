@@ -1,1 +1,1 @@
-python crawler.sh
+worker python crawler.sh
