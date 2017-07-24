@@ -1,5 +1,4 @@
 krakenex
 pushbullet.py
 configobj
-simplejson    
-python3-pandas
+simplejson    pandas
