@@ -1,6 +1,5 @@
 krakenex
 pushbullet.py
-sqlite3
 configobj
 simplejson    
 python3-pandas
