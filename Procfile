@@ -1,1 +1,1 @@
-worker python crawler.sh
+worker: python crawler_krakken.py
