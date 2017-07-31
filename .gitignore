@@ -1,6 +1,7 @@
 # specific
 TRADING.db
 config
+temporary_files/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
