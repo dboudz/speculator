@@ -47,6 +47,29 @@ def reset():
     time.sleep(5)
 
 
+def get_open_orders_ids():
+    return list(get_open_orders().keys())
+
+def get_open_orders():
+    dict_open_orders={}
+    try:
+        dict_open_orders=krakken_connection.query_private('OpenOrders')
+    except:
+        logger.info('get_open_orders : faced an error. Resetting exchange & retrying the request')
+        reset()
+        dict_open_orders=krakken_connection.query_private('OpenOrders')
+    return (dict_open_orders.get('result').get('open'))
+        
+def get_closed_orders():
+    dict_closed_orders={}
+    try:
+        dict_closed_orders=krakken_connection.query_private('ClosedOrders')
+    except:
+        logger.info('get_closed_orders : faced an error. Resetting exchange & retrying the request')
+        reset()
+        dict_closed_orders=krakken_connection.query_private('ClosedOrders')
+    return (dict_closed_orders.get('result').get('closed'))
+        
 def get_currency_ask_price(currency='XXRPZEUR'):
     ask_price=-1.0
     try:
