@@ -14,9 +14,15 @@ import krakenex
 import time
 import json,requests
 import logging
+
 from sqlalchemy import create_engine
 import pandas
 import numpy as np
+from pushbullet import Pushbullet
+
+# Init var
+key_pushbullet=os.environ['KEY_PUSHBULLET']
+SERVER_NAME=os.environ['SERVER_NAME']
 
 # Init parameters
 api_key=os.environ['API_KEY']
@@ -25,15 +31,38 @@ SERVER_NAME=os.environ['SERVER_NAME']
 DATABASE_URL=os.environ['DATABASE_URL']
 FEE_PERCENTAGE=0.16
 
-logger = logging.getLogger('EXCHANGE_KRAKKEN')
+# Logging Management
+logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
+
 sys.stdout.flush()
 krakken_connection=None
+PRIVACY_PRIVATE='private'
+PRIVACY_PUBLIC='public'
+
+# TODO SEPARER EXCHANGE ET BUSINESS LOGIC
+def exchange_call(privacy,function,parameters={}):
+    result=None
+    if(privacy==PRIVACY_PRIVATE):
+        try:
+            result=krakken_connection.query_private(function,parameters)
+        except:
+            logger.info(function+' private faced an error. Resetting exchange & retrying the request')
+            reset()
+            result=krakken_connection.query_private(function,parameters)
+    if(privacy==PRIVACY_PUBLIC):
+        try:
+            result=krakken_connection.query_public(function,parameters)
+        except:
+            logger.info(function+' public faced an error. Resetting exchange & retrying the request')
+            reset()
+            result=krakken_connection.query_public(function,parameters)
+    return result
 
 
 def init():
@@ -52,68 +81,33 @@ def get_open_orders_ids():
     return list(get_open_orders().keys())
 
 def get_open_orders():
-    dict_open_orders={}
-    try:
-        dict_open_orders=krakken_connection.query_private('OpenOrders')
-    except:
-        logger.info('get_open_orders : faced an error. Resetting exchange & retrying the request')
-        reset()
-        dict_open_orders=krakken_connection.query_private('OpenOrders')
+    dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
     return (dict_open_orders.get('result').get('open'))
         
 def get_closed_orders():
-    dict_closed_orders={}
-    try:
-        dict_closed_orders=krakken_connection.query_private('ClosedOrders')
-    except:
-        logger.info('get_closed_orders : faced an error. Resetting exchange & retrying the request')
-        reset()
-        dict_closed_orders=krakken_connection.query_private('ClosedOrders')
+    dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
     return (dict_closed_orders.get('result').get('closed'))
   
 
 def cancel_order(order_id):
     req_data={'txid':order_id}
-    cancel_order=None
-    try:
-        cancel_order=krakken_connection.query_private('CancelOrder',req_data)
-    except:
-        logger.info('cancel_order : faced an error. Resetting exchange & retrying the request')
-        reset()
-        cancel_order=krakken_connection.query_private('CancelOrder',req_data)
+    cancel_order=exchange_call(PRIVACY_PRIVATE,'CancelOrder',req_data)
     return cancel_order
     #{'error': [], 'result': {'count': 1}}
       
 def get_currency_ask_price(currency='XXRPZEUR'):
     ask_price=-1.0
-    try:
-        dict_currency_valuation_informations=get_currency_value(currency)
-        ask_price=float(dict_currency_valuation_informations.get(currency).get('a')[0])
-    except socket.timeout:
-        logger.info('get_currency_ask_price : faced a timeout. Resetting exchange & retrying the request')
-        reset()
-        dict_currency_valuation_informations=get_currency_value(currency)
-        ask_price=float(dict_currency_valuation_informations.get(currency).get('a')[0])
-    except http.client.RemoteDisconnected:
-        logger.info('get_currency_ask_price : faced a server RemoteDisconnected. Resetting exchange & retrying the request')
-        reset()
-        dict_currency_valuation_informations=get_currency_value(currency)
-        ask_price=float(dict_currency_valuation_informations.get(currency).get('a')[0])
+    dict_currency_valuation_informations=get_currency_value(currency)
+    ask_price=float(dict_currency_valuation_informations.get('result').get(currency).get('a')[0])
 
     return ask_price
 
 
 def get_server_unixtime():
-    unix_time_integer=-1
-    try:
-        time_krakken=krakken_connection.query_public('Time')
-    except:
-        logger.info('get_server_time : faced an error.Resetting connector')
-        reset()
-        time_krakken=krakken_connection.query_public('Time')
-    
+    unix_time_integer=-1    
+    time_krakken=exchange_call(PRIVACY_PUBLIC,'Time')    
     unix_time_integer=time_krakken.get('result').get('unixtime')
-    #SQL to Timestamp postgres = select to_timestamp(1501523090);
+    #Tips for SQL to Timestamp postgres = select to_timestamp(1501523090);
     return unix_time_integer
     
 # return (ask_price:float,slope:float)
@@ -131,7 +125,7 @@ def get_trend(currency='XXRPZEUR'):
     and currency='"""+currency+"""' 
     order by currency_date asc;
     """
-    
+    # TODO : PAS NORMAL DE FAIRE CA ICI
     # Init db parameters
     engine = create_engine(DATABASE_URL)    
     conn_crawling = engine.connect()
@@ -151,14 +145,9 @@ def get_trend(currency='XXRPZEUR'):
 
 def sell(volume,price,currency='XXRPZEUR'):
     req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
-    result=None
-    try:
-        result=krakken_connection.query_private('AddOrder',req_data)
-    except:
-        logger.info('sell : faced an error.Resetting connector')
-        reset()
-        result=krakken_connection.query_private('AddOrder',req_data)
-    print(result)      
+    result=exchange_call(PRIVACY_PRIVATE,'AddOrder',req_data)
+    logger.debug(result) 
+    return result     
 
 def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     volume=float(volume)
@@ -181,36 +170,45 @@ def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     return unit_sell_price
    
 
-
-
-
 def buy(volume,price,currency='XXRPZEUR'):
     req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
-    result=None
-    try:
-        result=krakken_connection.query_private('AddOrder',req_data)
-    except:
-        logger.info('buy : faced an error.Resetting connector')
-        reset()
-        result=krakken_connection.query_private('AddOrder',req_data)
-    print(result)
+    result=exchange_call(PRIVACY_PRIVATE,'AddOrder',req_data)
+    logger.debug(result)
+    return result
     #{'error': [], 'result': {'descr': {'order': 'buy 100.00000000 XRPEUR @ limit 0.100000'}, 'txid': ['OHLVH2-GYDQ5-YQM6GP']}}
 
-def get_currency_value(currency_separated_by_commas='EOSEUR,XRPEUR'):
+def get_currency_value(currency_separated_by_commas='XXRPZEUR'):
     req_data = {'pair': currency_separated_by_commas}
-    cur=None
-    try:
-        cur=krakken_connection.query_public('Ticker',req_data)
-        cur=cur.get('result')
-    except json.decoder.JSONDecodeError :
-        logger.error('Error Json Decoder')
-        cur=None
-    except TimeoutError :
-        logger.error('To check')
-        cur=None
-    except ValueError:
-        logger.error('To check 2')
-        cur=None
+    cur=exchange_call(PRIVACY_PUBLIC,'Ticker',req_data)
     return cur
+
+
+def notify(title='Default Title',text='Default Text'):
+    global pb
+    pb=Pushbullet(key_pushbullet)
+    
+    #TODO DISGUSTING
+    if(SERVER_NAME!='MBP-David-'):
+        try:
+            pb.push_note('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
+        except :
+            #TODO
+            logger.debug('Pushbullet TimeoutError')
+    else:
+        logger.debug('['+title+']', "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
+
+
+def check_orders_and_notify_if_closure_detected(list_knowned_open_orders):
+    fresh_open_orders_list=get_open_orders_ids()
+    
+    for oe in list_knowned_open_orders:
+        if oe not in fresh_open_orders_list:
+            # Get details about closed orders
+            closed_orders=get_closed_orders()
+            coe=closed_orders.get(oe)
+            status=str(coe.get('status'))
+            descr=str(coe.get('descr'))
+            notify('Order '+status,descr)
+    return fresh_open_orders_list
 
 

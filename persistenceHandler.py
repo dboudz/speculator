@@ -8,9 +8,18 @@ Created on Tue Jul 11 21:20:20 2017
 from sqlalchemy import create_engine
 import pandas
 import os
+import logging
+
+# Logging Management
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
 
 # Init parameters
-print(os.environ["DATABASE_URL"])
 engine = create_engine(os.environ["DATABASE_URL"])    
 conn = engine.connect()
 
@@ -23,7 +32,7 @@ def getCrawling(currency=""):
 
 def initDB():
     # Create table for currency crawling
-    print("create if not exist table crawling")
+    logger.debug("create if not exist table crawling")
     sql_create_crawling_table="""
     create table if not exists
     crawling(
@@ -54,7 +63,7 @@ def initDB():
 
         
     # Create table for currency crawling
-    print("create if not exist table buying signals")
+    logger.debug("create if not exist table buying signals")
     sql_create_crawling_table="""
     create table if not exists
     buying_signal(
@@ -79,7 +88,6 @@ def initDB():
 #    o = today's opening price
 
 
-lol=None
 
 def storeBuyingSignal(timestamp,currency,ask_price):
     
@@ -92,7 +100,7 @@ def storeBuyingSignal(timestamp,currency,ask_price):
     
     df=pandas.read_sql(sql_check,conn)
     if(int(df.iloc[0]['counter'])>0):
-        print("Record already exists")
+        logger.debug("Record already exists")
         return 0
     else:
         sql_insert=""" INSERT INTO buying_signal(buying_signal_date,currency,ask_price) VALUES
