@@ -23,6 +23,7 @@ api_key=os.environ['API_KEY']
 api_sign=os.environ['API_SIGN']
 SERVER_NAME=os.environ['SERVER_NAME']
 DATABASE_URL=os.environ['DATABASE_URL']
+FEE_PERCENTAGE=0.16
 
 logger = logging.getLogger('EXCHANGE_KRAKKEN')
 handler = logging.StreamHandler()
@@ -69,7 +70,21 @@ def get_closed_orders():
         reset()
         dict_closed_orders=krakken_connection.query_private('ClosedOrders')
     return (dict_closed_orders.get('result').get('closed'))
-        
+  
+
+def cancel_order(order_id):
+    print("todo")
+    req_data={'txid':order_id}
+    cancel_order=None
+    try:
+        cancel_order=krakken_connection.query_private('CancelOrder',req_data)
+    except:
+        logger.info('cancel_order : faced an error. Resetting exchange & retrying the request')
+        reset()
+        cancel_order=krakken_connection.query_private('CancelOrder',req_data)
+    return cancel_order
+    #{'error': [], 'result': {'count': 1}}
+      
 def get_currency_ask_price(currency='XXRPZEUR'):
     ask_price=-1.0
     try:
@@ -136,9 +151,55 @@ def get_trend(currency='XXRPZEUR'):
     #model = pd.ols(y=ts,x=ts.index,intercept=True)
     return coefficients[0]
 
+def sell(volume,price,currency='XXRPZEUR'):
+    req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
+    result=None
+    try:
+        result=krakken_connection.query_private('AddOrder',req_data)
+    except:
+        logger.info('sell : faced an error.Resetting connector')
+        reset()
+        result=krakken_connection.query_private('AddOrder',req_data)
+    print(result)      
+
+def calculate_minimum_sell_price_to(volume,buy_price,objective=1.0):
+    volume=float(volume)
+    price=float(buy_price)
+    amount=round(volume*price,5)
+    fee=round((amount/100)*FEE_PERCENTAGE,5)
+        
+    gain=0
+    STEP=0.0001
+    sell_price=amount+(fee*2)
+    
+    while(gain<1):
+        print("*****")
+        sell_amount=sell_price
+        sell_fee=(sell_amount/100)*FEE_PERCENTAGE
+        print(sell_amount)
+        
+        gain=(sell_amount+sell_fee)-(amount+fee)
+        print(gain)
+        
+        sell_price=sell_price+STEP
+        
+    return sell_price
+   
 
 
 
+
+def buy(volume,price,currency='XXRPZEUR'):
+    req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
+    result=None
+    try:
+        result=krakken_connection.query_private('AddOrder',req_data)
+    except:
+        logger.info('buy : faced an error.Resetting connector')
+        reset()
+        result=krakken_connection.query_private('AddOrder',req_data)
+    print(result)
+    #{'error': [], 'result': {'descr': {'order': 'buy 100.00000000 XRPEUR @ limit 0.100000'}, 'txid': ['OHLVH2-GYDQ5-YQM6GP']}}
 
 def get_currency_value(currency_separated_by_commas='EOSEUR,XRPEUR'):
     req_data = {'pair': currency_separated_by_commas}
