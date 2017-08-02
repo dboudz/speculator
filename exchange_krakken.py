@@ -73,7 +73,6 @@ def get_closed_orders():
   
 
 def cancel_order(order_id):
-    print("todo")
     req_data={'txid':order_id}
     cancel_order=None
     try:
@@ -89,7 +88,6 @@ def get_currency_ask_price(currency='XXRPZEUR'):
     ask_price=-1.0
     try:
         dict_currency_valuation_informations=get_currency_value(currency)
-        print(dict_currency_valuation_informations)
         ask_price=float(dict_currency_valuation_informations.get(currency).get('a')[0])
     except socket.timeout:
         logger.info('get_currency_ask_price : faced a timeout. Resetting exchange & retrying the request')
@@ -162,28 +160,25 @@ def sell(volume,price,currency='XXRPZEUR'):
         result=krakken_connection.query_private('AddOrder',req_data)
     print(result)      
 
-def calculate_minimum_sell_price_to(volume,buy_price,objective=1.0):
+def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     volume=float(volume)
-    price=float(buy_price)
-    amount=round(volume*price,5)
-    fee=round((amount/100)*FEE_PERCENTAGE,5)
-        
-    gain=0
-    STEP=0.0001
-    sell_price=amount+(fee*2)
+    buy_unit_price=float(unit_price)
+    buy_price=round(volume*buy_unit_price,5)
+    buy_fee=round((buy_price/100)*FEE_PERCENTAGE,5)
     
-    while(gain<1):
-        print("*****")
-        sell_amount=sell_price
-        sell_fee=(sell_amount/100)*FEE_PERCENTAGE
-        print(sell_amount)
-        
-        gain=(sell_amount+sell_fee)-(amount+fee)
-        print(gain)
-        
+    #Init var
+    potential_gain=0
+    STEP=0.0001
+    sell_price=buy_price+(buy_fee*2)
+    
+    while(potential_gain<1):
         sell_price=sell_price+STEP
+        sell_fee=(sell_price/100)*FEE_PERCENTAGE
+        potential_gain=sell_price-buy_price-buy_fee-sell_fee
+        #logger.debug('potential_gain :'+str(potential_gain)+' at sell_price :'+str(sell_price))
         
-    return sell_price
+    unit_sell_price=sell_price/volume
+    return unit_sell_price
    
 
 
