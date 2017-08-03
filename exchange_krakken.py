@@ -195,7 +195,7 @@ def notify(title='Default Title',text='Default Text'):
             #TODO
             logger.error('Pushbullet Error '+str(e))
     else:
-        logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
+        logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+" (server time)\n"+text)
 
 
 def check_orders_and_notify_if_closure_detected(list_knowned_open_orders):
@@ -208,7 +208,7 @@ def check_orders_and_notify_if_closure_detected(list_knowned_open_orders):
             coe=closed_orders.get(oe)
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
-            notify('Order '+status,descr)
+            notify('Order '+oe+' '+str.upper(status),descr)
     return fresh_open_orders_list
 
 
