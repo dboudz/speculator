@@ -160,14 +160,14 @@ def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     STEP=0.0001
     sell_price=buy_price+(buy_fee*2)
     
-    while(potential_gain<1):
+    while(potential_gain<objective):
         sell_price=sell_price+STEP
         sell_fee=(sell_price/100)*FEE_PERCENTAGE
         potential_gain=sell_price-buy_price-buy_fee-sell_fee
         #logger.debug('potential_gain :'+str(potential_gain)+' at sell_price :'+str(sell_price))
         
     unit_sell_price=sell_price/volume
-    return unit_sell_price
+    return round(unit_sell_price,5)
    
 
 def buy(volume,price,currency='XXRPZEUR'):
@@ -191,9 +191,9 @@ def notify(title='Default Title',text='Default Text'):
     if(SERVER_NAME!='MBP-David-'):
         try:
             pb.push_note('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
-        except :
+        except Exception as e:
             #TODO
-            logger.debug('Pushbullet TimeoutError')
+            logger.error('Pushbullet Error '+str(e))
     else:
         logger.debug('['+title+']', "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
 
