@@ -190,12 +190,12 @@ def notify(title='Default Title',text='Default Text'):
     #TODO DISGUSTING
     if(SERVER_NAME!='MBP-David-'):
         try:
-            pb.push_note('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
+            pb.push_note('['+title+']',"At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
         except Exception as e:
             #TODO
             logger.error('Pushbullet Error '+str(e))
     else:
-        logger.debug('['+title+']', "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
+        logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
 
 
 def check_orders_and_notify_if_closure_detected(list_knowned_open_orders):
