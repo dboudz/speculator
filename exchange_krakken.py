@@ -14,6 +14,7 @@ import krakenex
 import time
 import json,requests
 import logging
+import math
 
 from sqlalchemy import create_engine
 import pandas
@@ -29,7 +30,7 @@ api_key=os.environ['API_KEY']
 api_sign=os.environ['API_SIGN']
 SERVER_NAME=os.environ['SERVER_NAME']
 DATABASE_URL=os.environ['DATABASE_URL']
-FEE_PERCENTAGE=0.16
+
 
 # Logging Management
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ sys.stdout.flush()
 krakken_connection=None
 PRIVACY_PRIVATE='private'
 PRIVACY_PUBLIC='public'
+
 
 # TODO SEPARER EXCHANGE ET BUSINESS LOGIC
 def exchange_call(privacy,function,parameters={}):
@@ -88,20 +90,17 @@ def get_closed_orders():
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
     return (dict_closed_orders.get('result').get('closed'))
   
-
 def cancel_order(order_id):
     req_data={'txid':order_id}
     cancel_order=exchange_call(PRIVACY_PRIVATE,'CancelOrder',req_data)
     return cancel_order
     #{'error': [], 'result': {'count': 1}}
       
-def get_currency_ask_price(currency='XXRPZEUR'):
-    ask_price=-1.0
-    dict_currency_valuation_informations=get_currency_value(currency)
-    ask_price=float(dict_currency_valuation_informations.get('result').get(currency).get('a')[0])
-
-    return ask_price
-
+#def get_currency_ask_price():
+#    ask_price=-1.0
+#    dict_currency_valuation_informations=get_currency_value(currency)
+#    ask_price=float(dict_currency_valuation_informations.get('result').get(currency).get('a')[0])
+#    return ask_price
 
 def get_server_unixtime():
     unix_time_integer=-1    
@@ -149,27 +148,6 @@ def sell(volume,price,currency='XXRPZEUR'):
     logger.debug(result) 
     return result     
 
-def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
-    volume=float(volume)
-    buy_unit_price=float(unit_price)
-    buy_price=round(volume*buy_unit_price,5)
-    buy_fee=round((buy_price/100)*FEE_PERCENTAGE,5)
-    
-    #Init var
-    potential_gain=0
-    STEP=0.0001
-    sell_price=buy_price+(buy_fee*2)
-    
-    while(potential_gain<objective):
-        sell_price=sell_price+STEP
-        sell_fee=(sell_price/100)*FEE_PERCENTAGE
-        potential_gain=sell_price-buy_price-buy_fee-sell_fee
-        #logger.debug('potential_gain :'+str(potential_gain)+' at sell_price :'+str(sell_price))
-        
-    unit_sell_price=sell_price/volume
-    return round(unit_sell_price,5)
-   
-
 def buy(volume,price,currency='XXRPZEUR'):
     req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
     result=exchange_call(PRIVACY_PRIVATE,'AddOrder',req_data)
@@ -182,7 +160,6 @@ def get_currency_value(currency_separated_by_commas='XXRPZEUR'):
     cur=exchange_call(PRIVACY_PUBLIC,'Ticker',req_data)
     return cur
 
-
 def notify(title='Default Title',text='Default Text'):
     global pb
     pb=Pushbullet(key_pushbullet)
@@ -192,11 +169,9 @@ def notify(title='Default Title',text='Default Text'):
         try:
             pb.push_note('['+title+']',"At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
         except Exception as e:
-            #TODO
             logger.error('Pushbullet Error '+str(e))
     else:
         logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+" (server time)\n"+text)
-
 
 def check_orders_and_notify_if_closure_detected(list_knowned_open_orders):
     fresh_open_orders_list=get_open_orders_ids()
