@@ -45,6 +45,8 @@ sys.stdout.flush()
 krakken_connection=None
 PRIVACY_PRIVATE='private'
 PRIVACY_PUBLIC='public'
+DONE=0
+NOT_DONE=1
 
 
 # TODO SEPARER EXCHANGE ET BUSINESS LOGIC
@@ -78,14 +80,33 @@ def reset():
     init()
     time.sleep(5)
 
-
 def get_open_orders_ids():
     return list(get_open_orders().keys())
+
+# return [['id', 'type']]
+def get_open_orders_ids_and_type():
+    list_open_orders=[]
+    dict_open_orders=get_open_orders()
+    for orderId in list(dict_open_orders.keys()):
+        list_open_orders.append( [orderId,dict_open_orders.get(orderId).get('descr').get('type')])
+    return list_open_orders
 
 def get_open_orders():
     dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
     return (dict_open_orders.get('result').get('open'))
+  
+def get_open_orders_selling_with_unit_sell_price():
+    list_open_orders_with_unit_sell_price=[]
+    open_orders=get_open_orders()
+    for oe in list(open_orders.keys()):
+        oe_currency=open_orders.get(oe).get('descr').get('pair')
+        oe_order_type=open_orders.get(oe).get('descr').get('type')
+        oe_unit_sell_price=float(open_orders.get(oe).get('descr').get('price'))
         
+        if(oe_currency=='XRPEUR' and oe_order_type=='sell'):
+            list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price))
+    return list_open_orders_with_unit_sell_price
+
 def get_closed_orders():
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
     return (dict_closed_orders.get('result').get('closed'))
@@ -93,7 +114,10 @@ def get_closed_orders():
 def cancel_order(order_id):
     req_data={'txid':order_id}
     cancel_order=exchange_call(PRIVACY_PRIVATE,'CancelOrder',req_data)
-    return cancel_order
+    if(cancel_order.get('result').get('count')==1):
+        return DONE
+    else:
+        return NOT_DONE
     #{'error': [], 'result': {'count': 1}}
       
 #def get_currency_ask_price():
@@ -173,17 +197,17 @@ def notify(title='Default Title',text='Default Text'):
     else:
         logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+" (server time)\n"+text)
 
-def check_orders_and_notify_if_closure_detected(list_knowned_open_orders):
-    fresh_open_orders_list=get_open_orders_ids()
+def check_orders_and_notify_if_closure_detected(list_knowned_open_orders_with_ids):
+    fresh_open_orders_ids_list=get_open_orders_ids()
     
-    for oe in list_knowned_open_orders:
-        if oe not in fresh_open_orders_list:
+    for oe in list_knowned_open_orders_with_ids:
+        if oe[0] not in fresh_open_orders_ids_list:
             # Get details about closed orders
             closed_orders=get_closed_orders()
-            coe=closed_orders.get(oe)
+            coe=closed_orders.get(oe[0])
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
-            notify('Order '+oe+' '+str.upper(status),descr)
-    return fresh_open_orders_list
+            notify('Order '+oe[0]+' '+str.upper(status),descr)
+    return get_open_orders_ids_and_type()
 
 

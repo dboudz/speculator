@@ -21,10 +21,16 @@ logger.setLevel(logging.DEBUG)
 MINIMUM_XRP_VOLUME=30
 SELL_STEP=0.0001
 FEE_PERCENTAGE=0.16
+DONE=0
+NOT_DONE=1
 
-
-def check_traders_configuration(list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget):
+def check_traders_configuration(number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget):
     is_config_viable=True
+    #Checking number of traders
+    if(len(list_trader)!=number_of_traders):
+        is_config_viable=False
+        logger.error("Number of declared traders is wrong according to trader list size.")
+
     #Checking theoric viability of each traders
     test_budget=0.0
     for trader in list_trader:
@@ -77,4 +83,10 @@ def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     unit_sell_price=round( (sell_price/volume) ,5)
     logger.info('Minimum unit sell price to fit the objective is '+str(unit_sell_price))
     return unit_sell_price
+
+
+
+
+
+
    
