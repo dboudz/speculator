@@ -18,10 +18,22 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
-
 # Init parameters
 engine = create_engine(os.environ["DATABASE_URL"])    
 conn = engine.connect()
+
+def get_Trends_time_series(unix_time_now_exchange_server,currency,integer_delay_in_minutes):
+    # Get crawled values from 10 last mins
+    sql_get_last_minutes_currency_values="""
+    select ask_price,currency_date from crawling where 
+    currency_date between (to_timestamp("""+str(unix_time_now_exchange_server)+""") - INTERVAL '"""+str(integer_delay_in_minutes)+"""" minutes') and to_timestamp("""+str(unix_time_now_exchange_server)+""")
+    and currency='"""+str(currency)+"""' 
+    order by currency_date asc;
+    """
+    df_last_minutes=pandas.read_sql(sql_get_last_minutes_currency_values,conn)
+    ts_last_minutes=(df_last_minutes.set_index('currency_date')['ask_price'])
+    return ts_last_minutes
+
 
 def getCrawling(currency=""):
     if(len(currency)>0):

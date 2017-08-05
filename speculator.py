@@ -48,28 +48,29 @@ def increment_sequence():
     return sequence_number
 
 
-# trader (integerId,,budget(€),buy_unit_price,sell_unit_price,is_engaged,open_orders,Status
+# trader (integerId,,budget(€),buy_unit_price,sell_unit_price,is_engaged,open_orders,Status,available_budget
 list_trader=[]
-list_trader.append([increment_sequence(),7.0,0.157,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.155,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.153,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.151,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.149,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.147,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.145,None,WAITING])
-list_trader.append([increment_sequence(),7.0,0.143,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.141,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.139,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.137,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.135,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.133,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.131,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.129,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.127,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.125,None,WAITING])
-list_trader.append([increment_sequence(),6.0,0.123,None,WAITING])
-list_trader.append([increment_sequence(),5.0,0.121,None,WAITING])
-list_trader.append([increment_sequence(),5.0,0.119,None,WAITING])
+list_trader.append([increment_sequence(),7.0,0.157,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.155,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.153,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.151,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.149,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.147,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.145,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.143,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.141,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.139,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.137,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.135,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.133,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.131,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.129,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.127,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.125,None,WAITING,0.0])
+list_trader.append([increment_sequence(),6.0,0.123,None,WAITING,0.0])
+list_trader.append([increment_sequence(),5.0,0.121,None,WAITING,0.0])
+list_trader.append([increment_sequence(),5.0,0.119,None,WAITING,0.0])
+
 
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
@@ -102,12 +103,13 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price():
             # Set up the trader with new status
             list_trader[index][3]=str(open_selling_order[0])
             list_trader[index][4]=SELLING
-            
-            #TODO Ajouter une securite pour ne pas mapper 2 fois l'ordre
+            list_trader[index][5]=0.0
+            #TODO Ajouter une securite pour ne pas mapper 2 fois l'ordre break ????
     if is_order_mapped==False:
         logger.info('Order '+str(open_selling_order[0])+' is NOT MAPPED')
 
-
+################ TODO TODO
+#TODO## TEST IF THE BUDGET IS COMPLIANT WITH MONEY DEPOSIT ON EXCHANGE
 
 logger.info("------- Let's Trade Baby------------------- ;)")
 while(1==1):
@@ -133,19 +135,31 @@ while(1==1):
     ##########################
     # Get trading informations
     
-    # Setting budget for traders
-    logger.info("----------------------------------------")
-    available_budget=0
-    for index in range(0,number_of_traders):
-        # Define budget available for current trader 
-        if(list_trader[index][4]==WAITING):
-            available_budget=available_budget+list_trader[index][1]
-            logger.debug('Trader '+str(index)+' has a budget of '+str(available_budget)+' €')
-        else:
-            logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-
+    # Check if a trader is buying, else set up to buy
     
+    #TODO IF BUYING
+    if(1==1):
+        # Verifier si l'ordre d'achat est toujours bien placé par rapport au maché
+        # ,c'est à dire juste en dessous mais le marché ne doit pas être supérieur à l'ordre de vente du palier au dessus
+        # si c'est le cas, annuler l'ordre
+        print('lol')
     
+    #TODO IF NO BUYING IN PROGRESS
+    if(1==1):
+        # Setting budget for traders
+        logger.info("----------------------------------------")
+        available_budget=0
+        for index in range(0,number_of_traders):
+            # Define budget available for current trader 
+            if(list_trader[index][4]==WAITING):
+                available_budget=available_budget+list_trader[index][1]
+                list_trader[index][5]=available_budget
+                logger.debug('Trader '+str(index)+' has a budget of '+str(available_budget)+' €')
+                
+            else:
+                list_trader[index][5]=0.0
+                logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
+        # Try to add a buying order (cf critere au dessus)
     
     
     

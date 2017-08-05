@@ -7,6 +7,7 @@ Created on Fri Aug  4 23:30:10 2017
 """
 import logging
 import math
+import numpy as np
 
 
 # Logging Management
@@ -65,7 +66,25 @@ def can_I_setup_like_this_to_respect_objective_and_step(initial_unit_price,step_
     else:
         logger.info('Sell is possible for minimum unit price '+str(minimum_unit_sell_price))
         return True
+
+# return (ask_price:float,slope:float)
+def it_market_increasing(ts_last_minutes_ask_price):
     
+    # Thanks to ttp://www.emilkhatib.com/analyzing-trends-in-data-with-pandas/
+    coefficients, residuals, _, _, _ = np.polyfit(range(len(ts_last_minutes_ask_price.index)),ts_last_minutes_ask_price.values,1,full=True)
+    #mse = residuals[0]/(len(ts_last_minutes_ask_price.index))
+    #nrmse = np.sqrt(mse)/(ts_last_minutes_ask_price.max() - ts_last_minutes_ask_price.min())
+    #logger.debug('Slope ' + str(coefficients[0]))
+    #logger.debug('NRMSE: ' + str(nrmse))
+    
+    #TODO tester plus tard la régression linéaire
+    #model = pd.ols(y=ts,x=ts.index,intercept=True)
+    is_trend_positive=True
+    if(coefficients[0]<0):
+        is_trend_positive=False
+    
+    return is_trend_positive
+
 def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     volume=float(volume)
     buy_unit_price=float(unit_price)

@@ -133,38 +133,7 @@ def get_server_unixtime():
     #Tips for SQL to Timestamp postgres = select to_timestamp(1501523090);
     return unix_time_integer
     
-# return (ask_price:float,slope:float)
-# If slope + increasing, if slope <0 then decreasing
-def get_trend(currency='XXRPZEUR'):
-    # Get server time
-    unix_time_integer=get_server_unixtime()
-    # test increasing
-    #unix_time_integer=1501523931
-    
-    # Get crawled values from 10 last mins
-    sql_get_last_minutes_currency_values="""
-    select ask_price,currency_date from crawling where 
-    currency_date between (to_timestamp("""+str(unix_time_integer)+""") - INTERVAL '10 minutes') and to_timestamp("""+str(unix_time_integer)+""")
-    and currency='"""+currency+"""' 
-    order by currency_date asc;
-    """
-    # TODO : PAS NORMAL DE FAIRE CA ICI
-    # Init db parameters
-    engine = create_engine(DATABASE_URL)    
-    conn_crawling = engine.connect()
-    df_last_minutes=pandas.read_sql(sql_get_last_minutes_currency_values,conn_crawling)
-    ts_last_minutes=(df_last_minutes.set_index('currency_date')['ask_price'])
-    
-    #http://www.emilkhatib.com/analyzing-trends-in-data-with-pandas/
-    coefficients, residuals, _, _, _ = np.polyfit(range(len(ts_last_minutes.index)),ts_last_minutes.values,1,full=True)
-    mse = residuals[0]/(len(ts_last_minutes.index))
-    nrmse = np.sqrt(mse)/(ts_last_minutes.max() - ts_last_minutes.min())
-    logger.info('Slope ' + str(coefficients[0]))
-    logger.info('NRMSE: ' + str(nrmse))
-    
-    #TODO tester plus tard la régression linéaire
-    #model = pd.ols(y=ts,x=ts.index,intercept=True)
-    return coefficients[0]
+
 
 def sell(volume,price,currency='XXRPZEUR'):
     req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
