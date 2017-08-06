@@ -178,10 +178,25 @@ while(1==1):
             else:
                 list_trader[index][5]=0.0
                 logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-        logger.info("------End of Budget Calculation----")
+        logger.info("------End of Budget Calculation,----")
         
-        #TODO SELECT TRADER AND BUY
-        
+        # /!\ check from lowest trader to higher trader is essential
+        SELECTED_TRADER_ID_FOR_BUYING=-1
+        for index in range(number_of_traders,0,-1):
+            # If trader's buy price is higher than value price we have the right trader
+            if(list_trader[index][2]>=currency_actual_ask_price):
+                SELECTED_TRADER_ID_FOR_BUYING=index
+                text1="Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+'selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price)
+                text2="          budget is going to be "+str(list_trader[index][5])+"€"
+                logger.info(text1)
+                logger.info(text2)
+                # TO DELETE
+                kraken.notify('BUYING ORDER IS GONNA BE CREATED !!!!',text=text1+"\n"+text2)
+                # create buying order
+                kraken.no
+                # setup buying mode to avoir other buy attempt
+                EXISTS_OPEN_BUYING_ORDERS=True
+                #TODO
     else:
         if(IS_TREND_GROWING==False):  
             logger.info("Market is not good at this time ")
