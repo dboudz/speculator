@@ -186,7 +186,7 @@ while(1==1):
             # If trader's buy price is higher than value price we have the right trader
             if(list_trader[index][2]>=currency_actual_ask_price):
                 # index of selected trader is index-1
-                SELECTED_TRADER_ID_FOR_BUYING=index-1
+                SELECTED_TRADER_ID_FOR_BUYING=index+1
                 text1="Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price)
                 text2="          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€"
                 logger.info(text1)
