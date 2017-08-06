@@ -71,7 +71,12 @@ def can_I_setup_like_this_to_respect_objective_and_step(initial_unit_price,step_
 def it_market_increasing(ts_last_minutes_ask_price):
     
     # Thanks to ttp://www.emilkhatib.com/analyzing-trends-in-data-with-pandas/
-    coefficients, residuals, _, _, _ = np.polyfit(range(len(ts_last_minutes_ask_price.index)),ts_last_minutes_ask_price.values,1,full=True)
+    try:
+        coefficients, residuals, _, _, _ = np.polyfit(range(len(ts_last_minutes_ask_price.index)),ts_last_minutes_ask_price.values,1,full=True)
+    except Exception as e:
+        logger.error('it_market_increasing exception '+str(e))
+        logger.error('Protective behavior: sending False for is_trend_positive ')
+        return False
     #mse = residuals[0]/(len(ts_last_minutes_ask_price.index))
     #nrmse = np.sqrt(mse)/(ts_last_minutes_ask_price.max() - ts_last_minutes_ask_price.min())
     #logger.debug('Slope ' + str(coefficients[0]))

@@ -133,7 +133,7 @@ def storeBuyingSignal(timestamp,currency,ask_price):
         return(1)
     
 
-def storeCurrency(currency,ask_array,bid_array,last_trade_closed_array,volume_array,volume_weighted_average_price_array,number_of_trades_array,low_array,high_array,today_opening_price):
+def storeCurrency(kraken_time,currency,ask_array,bid_array,last_trade_closed_array,volume_array,volume_weighted_average_price_array,number_of_trades_array,low_array,high_array,today_opening_price):
     
     sql_insert=""" INSERT INTO crawling(
     currency_date,
@@ -160,8 +160,8 @@ def storeCurrency(currency,ask_array,bid_array,last_trade_closed_array,volume_ar
     )
     values
     (
-    now(),
-    '"""+currency+"""',
+    to_timestamp("""+str(kraken_time)+"""),
+    '"""+str(currency)+"""',
     """+str(ask_array[0])+""",
     """+str(ask_array[1])+""",
     """+str(ask_array[2])+""",
