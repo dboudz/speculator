@@ -123,7 +123,7 @@ while(1==1):
     # Crawl and store data
     ######################
     crawled_currencies=kraken.get_currency_value(CRAWLED_CURRENCIES)
-    currency_actual_ask_price=crawled_currencies.get('result').get(TRADING_CURRENCY).get('a')[0]
+    currency_actual_ask_price=float(crawled_currencies.get('result').get(TRADING_CURRENCY).get('a')[0])
     if(crawled_currencies != None):
         for currency in crawled_currencies.get('result').keys():
             c=crawled_currencies.get('result').get(currency)
@@ -191,7 +191,7 @@ while(1==1):
                 logger.info(text1)
                 logger.info(text2)
                 # TO DELETE
-                kraken.notify('BUYING ORDER IS GONNA BE CREATED !!!!',text=text1+"\n"+text2)
+                #kraken.notify('BUYING ORDER IS GONNA BE CREATED !!!!',text=text1+"\n"+text2)
                 # create buying order
                 # TODO
                 # setup buying mode to avoir other buy attempt
