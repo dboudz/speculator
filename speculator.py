@@ -128,6 +128,7 @@ while(1==1):
         for currency in crawled_currencies.get('result').keys():
             c=crawled_currencies.get('result').get(currency)
             persistenceHandler.storeCurrency(kraken_time,currency,c.get('a'),c.get('b'),c.get('c'),c.get('v'),c.get('p'),c.get('t'),c.get('l'),c.get('h'),c.get('o'))
+    logger.info("Crawled values "+str(currency_actual_ask_price)+" for currency "+str(CRAWLED_CURRENCIES))
     time.sleep(15)
     
     ###########################
@@ -164,6 +165,7 @@ while(1==1):
     
     # If market is growing and no one is buying, check bugdet
     if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
+        logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
         # get the right trader, and launch buying
         logger.info("------Begin calculating the budget for each trader before buying----")
         available_budget=0
