@@ -200,10 +200,14 @@ while(1==1):
         trends5_is_growing=businessLogic.it_market_increasing(df5)
         trends10_is_growing=businessLogic.it_market_increasing(df10)
         trends15_is_growing=businessLogic.it_market_increasing(df15)
-        logger.info('Trend is based on Trend2:'+str(len(df2))+' elems,Trend5:'+str(len(df5))+' elems,Trend10:'+str(len(df10))+' elems,Trend15='+str(len(df15))+' elems')
+        logger.info('Trend data:  (Trend2:'+str(len(df2))+' elems),(Trend5:'+str(len(df5))+' elems),(Trend10:'+str(len(df10))+' elems),(Trend15='+str(len(df15))+' elems)')
         
         if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
-            IS_TREND_GROWING=True
+            # Checking that trends number is enough:
+            if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15):
+                IS_TREND_GROWING=True
+            else:
+                logger.warn("Number of data for trends is not reliable")
     
     
     # If market is growing and no one is buying, check bugdet
