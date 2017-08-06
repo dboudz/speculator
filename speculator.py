@@ -193,7 +193,7 @@ while(1==1):
                 # TO DELETE
                 kraken.notify('BUYING ORDER IS GONNA BE CREATED !!!!',text=text1+"\n"+text2)
                 # create buying order
-                kraken.no
+                # TODO
                 # setup buying mode to avoir other buy attempt
                 EXISTS_OPEN_BUYING_ORDERS=True
                 #TODO
