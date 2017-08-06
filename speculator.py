@@ -186,7 +186,7 @@ while(1==1):
             # If trader's buy price is higher than value price we have the right trader
             if(list_trader[index][2]>=currency_actual_ask_price):
                 SELECTED_TRADER_ID_FOR_BUYING=index
-                text1="Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+'selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price)
+                text1="Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price)
                 text2="          budget is going to be "+str(list_trader[index][5])+"€"
                 logger.info(text1)
                 logger.info(text2)
@@ -197,6 +197,7 @@ while(1==1):
                 # setup buying mode to avoir other buy attempt
                 EXISTS_OPEN_BUYING_ORDERS=True
                 #TODO
+                break;
     else:
         if(IS_TREND_GROWING==False):  
             logger.info("Market is not good at this time ")
