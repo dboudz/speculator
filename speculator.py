@@ -233,18 +233,27 @@ while(1==1):
             # If trader's buy price is higher than value price we have the right trader
             if(list_trader[index][2]>=currency_actual_ask_price):
                 # index of selected trader is index+1 (lower )
+                ##############
+                # BUYING ORDER
+                ##############
+                
                 SELECTED_TRADER_ID_FOR_BUYING=index+1
+                # Calculate volume to buy
+                volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
                 logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
                 logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
+                logger.info("          buying volume :"+str(volume_to_buy))
                 logger.info("          For further analysis, unix time is "+str(kraken_time))
-                # TO DELETE
-                #kraken.notify('BUYING ORDER IS GONNA BE CREATED !!!!',text=text1+"\n"+text2)
+            
                 # create buying order
-                # TODO
+                created_buying_order=kraken.buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                logger.info("Buying order "+str(created_buying_order)+" was created")
+                # /!\set up right status and cut budget setup selling order 
+                list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
+                list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
+                list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
                 # setup buying mode to avoir other buy attempt
                 EXISTS_OPEN_BUYING_ORDERS=True
-                # /!\set up right status and cut budget 
-                #TODO
                 break;
     else:
         if(IS_TREND_GROWING==False):  
