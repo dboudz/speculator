@@ -94,6 +94,8 @@ for order_with_type in list_open_orders_with_ids:
             logger.error("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
             kraken.notify('Fatal Error',"Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
             exit(1)
+# Reinitializing buying list:
+list_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
 
 # Map current orders with traders.
 for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price():
