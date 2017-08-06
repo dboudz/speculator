@@ -78,6 +78,7 @@ list_trader.append([increment_sequence(),5.0,0.119,None,WAITING,0.0])
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
     logger.error("Configuration of traders is not valid. Exiting")
+    kraken.notify('Fatal Error',"Configuration of traders is not valid. Exiting")
     exit(1)
 else:
     logger.info("Configuration of trader is valid [V]")
@@ -91,6 +92,7 @@ for order_with_type in list_open_orders_with_ids:
             logger.info("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
         else:
             logger.error("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
+            kraken.notify('Fatal Error',"Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
             exit(1)
 
 # Map current orders with traders.
@@ -275,7 +277,8 @@ while(1==1):
                         logger.info('Order no more smartly placed : following condition is not true anymore:\n (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
                         result=kraken.cancel_order(CURRENT_BUYING_ORDER_ID)
                         if(result!=DONE):
-                            logger.error('Cant cancel order '+str(CURRENT_BUYING_ORDER_ID))
+                            logger.error('Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
+                            kraken.notify('Fatal Error','Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
                             exit(1)
                 else:
                     logger.error("Technical Issue, trader tab is corrupted")
