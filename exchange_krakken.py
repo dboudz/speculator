@@ -166,6 +166,8 @@ def notify(title='Default Title',text='Default Text'):
     else:
         logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+" (server time)\n"+text)
 
+
+#TODO NOT IN THE RIGHT PLACE THIS IS NOT BUSINESS LOGIC
 def check_orders_and_notify_if_closure_detected(list_knowned_open_orders_with_ids):
     fresh_open_orders_ids_list=get_open_orders_ids()
     
@@ -177,6 +179,7 @@ def check_orders_and_notify_if_closure_detected(list_knowned_open_orders_with_id
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
             notify('Order '+oe[0]+' '+str.upper(status),descr)
+            # TODO IF ORDER TYPE IS BUY : GET THE SPECULATOR AND PUT SELLING ORDER
     return get_open_orders_ids_and_type()
 
 

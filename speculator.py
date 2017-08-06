@@ -178,11 +178,11 @@ while(1==1):
             else:
                 list_trader[index][5]=0.0
                 logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-        logger.info("------End of Budget Calculation,----")
+        logger.info("------End of Budget Calculation----")
         
         # /!\ check from lowest trader to higher trader is essential
         SELECTED_TRADER_ID_FOR_BUYING=-1
-        for index in range(number_of_traders,0,-1):
+        for index in range(number_of_traders-1,-1,-1):
             # If trader's buy price is higher than value price we have the right trader
             if(list_trader[index][2]>=currency_actual_ask_price):
                 SELECTED_TRADER_ID_FOR_BUYING=index
