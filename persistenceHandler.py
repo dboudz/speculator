@@ -34,6 +34,18 @@ def get_Trends_time_series(unix_time_now_exchange_server,currency,integer_delay_
     ts_last_minutes=(df_last_minutes.set_index('currency_date')['ask_price'])
     return ts_last_minutes
 
+def get_ask_price_at_momentum(unix_time_now_exchange_server,currency):
+    # Get crawled values from 10 last mins
+    sql_get_last_minutes_currency_values="""
+    select ask_price,currency_date from crawling where 
+    currency_date between (to_timestamp("""+str(unix_time_now_exchange_server)+""") - INTERVAL '"""+str(1)+"""" minutes') and to_timestamp("""+str(unix_time_now_exchange_server)+""")
+    and currency='"""+str(currency)+"""' 
+    order by currency_date desc limit 1;
+    """
+    df_last_minutes=pandas.read_sql(sql_get_last_minutes_currency_values,conn)
+    return df_last_minutes.loc[0].get('ask_price')
+
+
 
 def getCrawling(currency=""):
     if(len(currency)>0):
