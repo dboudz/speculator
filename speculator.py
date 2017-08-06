@@ -191,11 +191,16 @@ while(1==1):
     # Get trading informations only if no other speculators are buying
     IS_TREND_GROWING=False
     if(EXISTS_OPEN_BUYING_ORDERS==False):
-        trends2_is_growing=businessLogic.it_market_increasing(persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,2))
-        trends5_is_growing=businessLogic.it_market_increasing(persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,5))
-        trends10_is_growing=businessLogic.it_market_increasing(persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,10))
-        trends15_is_growing=businessLogic.it_market_increasing(persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,15))
-        logger.info('Trend is based on Trend2:'+str(len(trends2_is_growing))+' elems,Trend5:'+str(len(trends5_is_growing))+' elems,Trend10:'+str(len(trends10_is_growing))+' elems,Trend15='+str(len(trends15_is_growing))+' elems')
+        df2=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,2)
+        df5=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,5)
+        df10=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,10)
+        df15=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,15)
+        
+        trends2_is_growing=businessLogic.it_market_increasing(df2)
+        trends5_is_growing=businessLogic.it_market_increasing(df5)
+        trends10_is_growing=businessLogic.it_market_increasing(df10)
+        trends15_is_growing=businessLogic.it_market_increasing(df15)
+        logger.info('Trend is based on Trend2:'+str(len(df2))+' elems,Trend5:'+str(len(df5))+' elems,Trend10:'+str(len(df10))+' elems,Trend15='+str(len(df15))+' elems')
         
         if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
             IS_TREND_GROWING=True
