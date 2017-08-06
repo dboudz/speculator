@@ -25,14 +25,14 @@ FEE_PERCENTAGE=0.16
 DONE=0
 NOT_DONE=1
 
-def check_traders_configuration(number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget):
+def check_traders_configuration(budget_available_on_exchange,number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget):
     is_config_viable=True
-    #Checking number of traders
+    # Checking number of traders
     if(len(list_trader)!=number_of_traders):
         is_config_viable=False
         logger.error("Number of declared traders is wrong according to trader list size.")
 
-    #Checking theoric viability of each traders
+    # Checking theoric viability of each traders
     test_budget=0.0
     for trader in list_trader:
         isViable=can_I_setup_like_this_to_respect_objective_and_step( trader[2],step_between_unit_sell_and_unit_price,trader[1],expected_gain_by_band)
@@ -41,10 +41,14 @@ def check_traders_configuration(number_of_traders,list_trader,step_between_unit_
             logger.error("Configuration of trader "+str(trader[0])+"  is not valid.")
         test_budget=test_budget+trader[1]
         
-    #Checking theoric viability of global Budget
+    # Checking theoric viability of global Budget
     if(test_budget!=allowed_budget):
         is_config_viable=False
         logger.error("Sum of trader budget ("+str(test_budget)+") is different of globa budget("+str(allowed_budget)+")")
+    
+    # Checking if budget is available on platform
+    #TODO (pas si simple, il faut prendre en compte l'argent engagé)
+    
     return is_config_viable
 
 def calculate_fee(budget):
