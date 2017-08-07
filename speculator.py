@@ -68,7 +68,7 @@ def budgetCalculation(list_trader):
     # Display budget
     logger.info("------Display of Final budget ----")
     for index in range(0,number_of_traders):
-        logger.info('Trader '+str(index)+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index_above_trader][5]))
+        logger.info('Trader '+str(index)+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index][5]))
     
     logger.info("------End of Budget Calculation----")
     return list_trader
