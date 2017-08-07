@@ -74,6 +74,7 @@ list_trader.append([increment_sequence(),6.0,0.123,None,WAITING,0.0])
 list_trader.append([increment_sequence(),5.0,0.121,None,WAITING,0.0])
 list_trader.append([increment_sequence(),5.0,0.119,None,WAITING,0.0])
 
+# TODO if buying order is stuck for long time, create mini traders
 
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
@@ -140,10 +141,16 @@ while(1==1):
     # Check for closed Orders
     ###########################
     # Getting fresh version of the list and compare
-    fresh_open_orders_ids_list=kraken.get_open_orders_ids()
+    fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type()
+    fresh_oe_id_list=[]
+    for elem in fresh_open_orders_ids_list:
+        fresh_oe_id_list.append(elem[0])
+    
     for oe in list_open_orders_with_ids:
-        if oe[0] not in fresh_open_orders_ids_list:
-                        # Get details about closed orders for notification
+        if oe[0] not in fresh_oe_id_list:
+            logger.info('Order '+oe[0]+' is not in fresh open order list')
+
+            # Get details about closed orders for notification
             closed_orders=kraken.get_closed_orders()
             coe=closed_orders.get(oe[0])
             status=str(coe.get('status'))
@@ -173,8 +180,9 @@ while(1==1):
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
-                    break;
-                 
+                            break;
+    # Finally setup open order to freshest list
+    list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
     
     ##########################
@@ -191,6 +199,12 @@ while(1==1):
             EXISTS_OPEN_BUYING_ORDERS=True
             BUYING_TRADER_ID=list_trader[index][0]
             CURRENT_BUYING_ORDER_ID=list_trader[index][3]
+            # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
+            if(EXISTS_OPEN_BUYING_ORDERS):
+                if(list_trader[BUYING_TRADER_ID][3] in kraken.get_closed_orders().keys()):
+                    logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
+                    kraken.notify('Fatal Error','Can t cancel order ',str("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order"))
+                    exit(1)
     
     # Get trading informations only if no other speculators are buying
     IS_TREND_GROWING=False
@@ -284,6 +298,7 @@ while(1==1):
                             exit(1)
                 else:
                     logger.error("Technical Issue, trader tab is corrupted")
+
 
 
     

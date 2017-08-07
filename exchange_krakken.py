@@ -118,7 +118,6 @@ def get_open_orders_selling_with_unit_sell_price():
             list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price))
     return list_open_orders_with_unit_sell_price
 
-
 def get_closed_order_volume_by_id(id_order):
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
     for oe in list(dict_closed_orders.get('result').get('closed')):
