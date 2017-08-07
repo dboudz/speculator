@@ -99,7 +99,7 @@ list_trader.append([increment_sequence(),6.0,0.123,None,WAITING,0.0])
 list_trader.append([increment_sequence(),5.0,0.121,None,WAITING,0.0])
 list_trader.append([increment_sequence(),5.0,0.119,None,WAITING,0.0])
 
-# TODO if buying order is stuck for long time, create mini traders
+
 
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
@@ -109,6 +109,15 @@ if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),num
 else:
     logger.info("Configuration of trader is valid [V]")
 
+# Check that budget available on exchange is compliant 
+test_required_budget=0 
+for index in range(0,number_of_traders):
+    test_required_budget=test_required_budget+list_trader[index][5]
+test_available_budget=kraken.get_balance_EUR()
+if(test_available_budget<test_required_budget):
+    logger.error("Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
+    kraken.notify('Fatal Error',"Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
+    exit(1)
 
 # Closing All buying orders (security)
 for order_with_type in list_open_orders_with_ids:
@@ -144,9 +153,6 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price():
 
 # Calculate budget for further tests
 list_trader=budgetCalculation(list_trader)
-
-# TODO
-# Check that available budget EURO/XRP is compliant with open orders, budget  
 
 logger.info("------- Let's Trade Baby------------------- ;)")
 while(1==1):
@@ -273,22 +279,26 @@ while(1==1):
                 # BUYING ORDER
                 ##############
                 SELECTED_TRADER_ID_FOR_BUYING=index+1
-                # Calculate volume to buy
-                volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
-                logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
-                logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
-                logger.info("          buying volume :"+str(volume_to_buy))
-                logger.info("          For further analysis, unix time is "+str(kraken_time))
-            
-                # create buying order
-                created_buying_order=kraken.buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
-                logger.info("Buying order "+str(created_buying_order)+" was created")
-                # /!\set up right status and cut budget setup selling order 
-                list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
-                list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
-                list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
-                # setup buying mode to avoir other buy attempt
-                EXISTS_OPEN_BUYING_ORDERS=True
+                # Checking it trader is available:
+                if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
+                    # Calculate volume to buy
+                    volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                    logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
+                    logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
+                    logger.info("          buying volume :"+str(volume_to_buy))
+                    logger.info("          For further analysis, unix time is "+str(kraken_time))
+                
+                    # create buying order
+                    created_buying_order=kraken.buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                    logger.info("Buying order "+str(created_buying_order)+" was created")
+                    # /!\set up right status and cut budget setup selling order 
+                    list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
+                    list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
+                    list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
+                    # setup buying mode to avoir other buy attempt
+                    EXISTS_OPEN_BUYING_ORDERS=True
+                else:
+                    logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
                 break;
     else:
         if(EXISTS_OPEN_BUYING_ORDERS==True):
@@ -299,7 +309,7 @@ while(1==1):
                 buying_trader=list_trader[BUYING_TRADER_ID]
                 upper_buying_trader=list_trader[BUYING_TRADER_ID-1]
                 if(buying_trader[0]==BUYING_TRADER_ID and upper_buying_trader[0]==BUYING_TRADER_ID-1):
-                    # Technical security : get open order details  and check them
+                    # TODO Technical security : get open order details  and check them
                     # Control is : market price has to be - upper or  equals to buyer unit price
                     #                                     - below upper trader buy price
                     if(buying_trader[2]<= currency_actual_ask_price  and currency_actual_ask_price<upper_buying_trader[2] ):
