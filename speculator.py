@@ -358,7 +358,7 @@ while(1==1):
                             kraken.notify('Fatal Error','Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
                             exit(1)
                         else:
-                            logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False")
+                            logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False')
                             EXISTS_OPEN_BUYING_ORDERS=False
                 else:
                     logger.error("Technical Issue, trader tab is corrupted")
