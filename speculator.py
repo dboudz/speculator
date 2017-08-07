@@ -188,7 +188,6 @@ while(1==1):
     ##########################
     #Traders
     ##########################
-    
     CAN_LAUNCH_BUYING_ORDER=False
     CURRENT_BUYING_ORDER_ID=-1
     # Check if a trader is buying, else set up to buy
@@ -220,19 +219,23 @@ while(1==1):
         trends15_is_growing=businessLogic.it_market_increasing(df15)
         logger.info('Trend data:  (Trend2:'+str(len(df2))+' elems),(Trend5:'+str(len(df5))+' elems),(Trend10:'+str(len(df10))+' elems),(Trend15='+str(len(df15))+' elems)')
         
-        if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
+        # Checking if trend is reliable
+        if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15):
+            if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
             # Checking that trends number is enough:
-            if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15):
+                logger.info("Market is good right now ")
                 IS_TREND_GROWING=True
             else:
-                logger.warn("Number of data for trends is not reliable")
-    
-    
+                logger.info("Market is not good at this time ")
+        else:
+            logger.warn("Number of data for trends is not reliable")
+  
     # If market is growing and no one is buying, check bugdet
     if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
         logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
         # get the right trader, and launch buying
         logger.info("------Begin calculating the budget for each trader before buying----")
+        # ERROR : if there is a selling trader, above trader are supposed to have 0 budget
         available_budget=0
         for index in range(0,number_of_traders):
             # Define budget available for current trader 
@@ -243,6 +246,16 @@ while(1==1):
             else:
                 list_trader[index][5]=0.0
                 logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
+                logger.debug('Budget for above traders is going to be remove')
+                for index_above_trader in range(index,-1,-1):
+                    list_trader[index_above_trader][5]=0.0
+                    logger.debug('Trader '+str(index)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
+
+        # Display budget
+        logger.info("------Display of Final budget ----")
+        for index in range(0,number_of_traders):
+            logger.info('Trader '+str(index)+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index_above_trader][5]))
+        
         logger.info("------End of Budget Calculation----")
         
         # /!\ check from lowest trader to higher trader is essential
@@ -254,7 +267,6 @@ while(1==1):
                 ##############
                 # BUYING ORDER
                 ##############
-                
                 SELECTED_TRADER_ID_FOR_BUYING=index+1
                 # Calculate volume to buy
                 volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
@@ -274,8 +286,6 @@ while(1==1):
                 EXISTS_OPEN_BUYING_ORDERS=True
                 break;
     else:
-        if(IS_TREND_GROWING==False):  
-            logger.info("Market is not good at this time ")
         if(EXISTS_OPEN_BUYING_ORDERS==True):
             # On ne verifie pas l'ordre du top trader (on ne peut rien faire de toute manière)
             if(BUYING_TRADER_ID>0):
