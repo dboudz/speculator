@@ -210,7 +210,7 @@ while(1==1):
                 logger.info("order "+str(oe[0])+" just closed, searching trader")
                 for index in range(0,number_of_traders):
                     if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0]):
-                        logger.info(str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        logger.info("1 "+str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
                         if(oe[1]==BUYING and status==CLOSED ):
                             ########################
                             # CREATING SELLING ORDER
@@ -229,7 +229,7 @@ while(1==1):
                                 logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                                 break;
                     if(list_trader[index][4]==SELLING and list_trader[index][3]==oe[0]):
-                        logger.info(str(SELLING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        logger.info("2 "+str(SELLING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
                         ####################################################
                         # MANAGE SELL ENJOYMENT, OR BUY CANCELATION
                         ####################################################
@@ -241,7 +241,6 @@ while(1==1):
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(WAITING))
                             # TODO : Ajouter un petit quelque chose pour comptabiliser le gain ?
                             break;
-                                    # If an BUY order was CLOSED( not CANCELED), search the concerned speculator to create sell order
 
     # Finally setup open order to freshest list
     list_open_orders_with_ids=fresh_open_orders_ids_list
@@ -264,7 +263,7 @@ while(1==1):
             if(EXISTS_OPEN_BUYING_ORDERS):
                 if(list_trader[BUYING_TRADER_ID][3] in kraken.get_closed_orders().keys()):
                     logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
-                    kraken.notify('Fatal Error','Can t cancel order ',str("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order"))
+                    kraken.notify('Fatal Error','Can t cancel order '+str("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order"))
                     exit(1)
     
     # Get trading informations only if no other speculators are buying
@@ -358,10 +357,9 @@ while(1==1):
                             logger.error('Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
                             kraken.notify('Fatal Error','Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
                             exit(1)
+                        else:
+                            logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False")
+                            EXISTS_OPEN_BUYING_ORDERS=False
                 else:
                     logger.error("Technical Issue, trader tab is corrupted")
 
-
-
-    
-    
