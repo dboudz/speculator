@@ -27,61 +27,61 @@ init_time=kraken.get_server_unixtime()
 engine = create_engine('postgresql://azalead:azalead@localhost:5432/speculator')    
 conn = engine.connect()
 
-epoch=0
-for now in range(init_time-244800,init_time,60):
-    print("Epoch "+str(epoch))
-    market_price=persistenceHandler.get_ask_price_at_momentum(now,currency)
-    ts2=persistenceHandler.get_Trends_time_series(now,currency,2)
-    ts5=persistenceHandler.get_Trends_time_series(now,currency,5)
-    ts10=persistenceHandler.get_Trends_time_series(now,currency,10)
-    ts15=persistenceHandler.get_Trends_time_series(now,currency,15)
-    ts20=persistenceHandler.get_Trends_time_series(now,currency,20)
-    ts40=persistenceHandler.get_Trends_time_series(now,currency,40)
-    ts60=persistenceHandler.get_Trends_time_series(now,currency,60)
-    
-    
-    trend2 =businessLogic.it_market_increasing(ts2) 
-    trend5 =businessLogic.it_market_increasing(ts5)
-    trend10=businessLogic.it_market_increasing(ts10)
-    trend15=businessLogic.it_market_increasing(ts15)
-    trend20=businessLogic.it_market_increasing(ts20)
-    trend40=businessLogic.it_market_increasing(ts40)
-    trend60=businessLogic.it_market_increasing(ts60)
-    
-    t2='red'
-    t5='red'
-    t10='red'
-    t15='red'
-    t20='red'
-    t40='red'
-    t60='red'
-    if(trend2):
-        t2='green'
-    if(trend5):
-        t5='green'
-    if(trend10):
-        t10='green'
-    if(trend15):
-        t15='green'
-    if(trend20):
-        t20='green'
-    if(trend40):
-        t40='green'        
-    if(trend60):
-        t60='green'        
-        
-        
-    print("Is market Growing on 2  :"+str(trend2))
-    print("Is market Growing on 5  :"+str(trend5))
-    print("Is market Growing on 10 :"+str(trend10))
-    print("Is market Growing on 15 :"+str(trend15))
-    print("Is market Growing on 20 :"+str(trend20))
-    print("Is market Growing on 40 :"+str(trend40))
-    print("Is market Growing on 60 :"+str(trend60))
-    sql="insert into analysis(momentum,price,buy2,buy5,buy10,buy15,buy20,buy40,buy60) values ( to_timestamp("+str(now)+"),"+str(market_price)+",'"+t2+"','"+t5+"','"+t10+"','"+t15+"','"+t20+"','"+t40+"','"+t60+"')"
-    print(sql)
-    conn.execute(sql)
-    epoch=epoch+1
+#epoch=0
+#for now in range(init_time-244800,init_time,60):
+#    print("Epoch "+str(epoch))
+#    market_price=persistenceHandler.get_ask_price_at_momentum(now,currency)
+#    ts2=persistenceHandler.get_Trends_time_series(now,currency,2)
+#    ts5=persistenceHandler.get_Trends_time_series(now,currency,5)
+#    ts10=persistenceHandler.get_Trends_time_series(now,currency,10)
+#    ts15=persistenceHandler.get_Trends_time_series(now,currency,15)
+#    ts20=persistenceHandler.get_Trends_time_series(now,currency,20)
+#    ts40=persistenceHandler.get_Trends_time_series(now,currency,40)
+#    ts60=persistenceHandler.get_Trends_time_series(now,currency,60)
+#    
+#    
+#    trend2 =businessLogic.it_market_increasing(ts2) 
+#    trend5 =businessLogic.it_market_increasing(ts5)
+#    trend10=businessLogic.it_market_increasing(ts10)
+#    trend15=businessLogic.it_market_increasing(ts15)
+#    trend20=businessLogic.it_market_increasing(ts20)
+#    trend40=businessLogic.it_market_increasing(ts40)
+#    trend60=businessLogic.it_market_increasing(ts60)
+#    
+#    t2='red'
+#    t5='red'
+#    t10='red'
+#    t15='red'
+#    t20='red'
+#    t40='red'
+#    t60='red'
+#    if(trend2):
+#        t2='green'
+#    if(trend5):
+#        t5='green'
+#    if(trend10):
+#        t10='green'
+#    if(trend15):
+#        t15='green'
+#    if(trend20):
+#        t20='green'
+#    if(trend40):
+#        t40='green'        
+#    if(trend60):
+#        t60='green'        
+#        
+#        
+#    print("Is market Growing on 2  :"+str(trend2))
+#    print("Is market Growing on 5  :"+str(trend5))
+#    print("Is market Growing on 10 :"+str(trend10))
+#    print("Is market Growing on 15 :"+str(trend15))
+#    print("Is market Growing on 20 :"+str(trend20))
+#    print("Is market Growing on 40 :"+str(trend40))
+#    print("Is market Growing on 60 :"+str(trend60))
+#    sql="insert into analysis(momentum,price,buy2,buy5,buy10,buy15,buy20,buy40,buy60) values ( to_timestamp("+str(now)+"),"+str(market_price)+",'"+t2+"','"+t5+"','"+t10+"','"+t15+"','"+t20+"','"+t40+"','"+t60+"')"
+#    print(sql)
+#    conn.execute(sql)
+#    epoch=epoch+1
 
 
 

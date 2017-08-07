@@ -46,9 +46,6 @@ def check_traders_configuration(budget_available_on_exchange,number_of_traders,l
         is_config_viable=False
         logger.error("Sum of trader budget ("+str(test_budget)+") is different of globa budget("+str(allowed_budget)+")")
     
-    # Checking if budget is available on platform
-    #TODO (pas si simple, il faut prendre en compte l'argent engagé)
-    
     return is_config_viable
 
 def calculate_fee(budget):
@@ -112,9 +109,3 @@ def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
     logger.info('Minimum unit sell price to fit the objective is '+str(unit_sell_price))
     return unit_sell_price
 
-
-
-
-
-
-   

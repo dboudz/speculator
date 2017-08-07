@@ -15,8 +15,6 @@ import businessLogic
 # Cela évitera d'acheter à tous les paliers si on est dans une descente
 # Pas sur de ce truc....
 
-# yana bug sur la detection des closed orders
-
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
 CRAWLED_CURRENCIES=os.environ['CRAWLED_CURRENCIES']
@@ -36,12 +34,15 @@ DONE=0
 NOT_DONE=1
 
 
+
 ####################11
 # Initialize traders
 WAITING='wait'
 SELLING='sell'
 BUYING='buy'
 TRADING_CURRENCY='XXRPZEUR'
+CLOSED='closed'
+CANCELED='canceled'
 
 allowed_budget=150.0
 expected_gain_by_band=0.065
@@ -114,7 +115,7 @@ if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),num
     kraken.notify('Fatal Error',"Configuration of traders is not valid. Exiting")
     exit(1)
 else:
-    logger.info("Configuration of trader is valid [V]")
+    logger.info("[V] Configuration of trader is valid [V]")
 
 # Check that budget available on exchange is compliant 
 test_required_budget=0 
@@ -163,7 +164,7 @@ list_trader=budgetCalculation(list_trader)
 
 logger.info("------- Let's Trade Baby------------------- ;)")
 logger.info("------- Speculator buying mode is :"+str(AUTHORIZATION_OF_BUYING)+" ")
-logger.info("------- --------------------------------------")
+logger.info("---------------------------------------------")
     
 while(1==1):
     # Get current exchange time
@@ -181,9 +182,9 @@ while(1==1):
     logger.info("Crawled values "+str(currency_actual_ask_price)+" for currency "+str(CRAWLED_CURRENCIES))
     time.sleep(15)
     
-    ###########################
-    # Check for closed Orders
-    ###########################
+    ###############################################################
+    # Check for closed Orders and perform corresponding actions
+    ###############################################################
     # Getting fresh version of the list and compare
     fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type()
     fresh_oe_id_list=[]
@@ -203,13 +204,14 @@ while(1==1):
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
             
-            # If an BUY order was closed, search the concerned speculator to create sell order
-            if(oe[1]==BUYING or oe[1]==SELLING ):
+            # If an BUY order was CLOSED( not CANCELED), search the concerned speculator to create sell order
+
+            if(oe[1]==BUYING or oe[1]==SELLING):
                 logger.info("order "+str(oe[0])+" just closed, searching trader")
                 for index in range(0,number_of_traders):
                     if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0]):
                         logger.info(str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
-                        if(oe[1]==BUYING):
+                        if(oe[1]==BUYING and status==CLOSED ):
                             ########################
                             # CREATING SELLING ORDER
                             ########################
@@ -228,11 +230,10 @@ while(1==1):
                                 break;
                     if(list_trader[index][4]==SELLING and list_trader[index][3]==oe[0]):
                         logger.info(str(SELLING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
-                        # double check and then set speculator to wait mode
-                        ##########################
-                        # ENJOYING SELL COMPLETION
-                        ##########################
-                        if(oe[1]==SELLING):
+                        ####################################################
+                        # MANAGE SELL ENJOYMENT, OR BUY CANCELATION
+                        ####################################################
+                        if(oe[1]==SELLING or (oe[1]==BUYING and status==CANCELED)):
                             list_trader[index][3]=None
                             list_trader[index][4]=WAITING
                             # budget will be calculated in the iteration
@@ -240,13 +241,14 @@ while(1==1):
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(WAITING))
                             # TODO : Ajouter un petit quelque chose pour comptabiliser le gain ?
                             break;
-                            
+                                    # If an BUY order was CLOSED( not CANCELED), search the concerned speculator to create sell order
+
     # Finally setup open order to freshest list
     list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
     
     ##########################
-    #Traders
+    # Traders
     ##########################
     CAN_LAUNCH_BUYING_ORDER=False
     CURRENT_BUYING_ORDER_ID=-1
@@ -305,9 +307,9 @@ while(1==1):
                 # If trader's buy price is higher than value price we have the right trader
                 if(list_trader[index][2]>=currency_actual_ask_price):
                     # index of selected trader is index+1 (lower )
-                    ##############
-                    # BUYING ORDER
-                    ##############
+                    ###################
+                    # SET BUYING ORDER
+                    ##################
                     SELECTED_TRADER_ID_FOR_BUYING=index+1
                     # Checking it trader is available:
                     if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
@@ -347,6 +349,9 @@ while(1==1):
                     if(buying_trader[2]<= currency_actual_ask_price  and currency_actual_ask_price<upper_buying_trader[2] ):
                         logger.info('Order is still rightly placed : (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
                     else:
+                        #############################
+                        # CANCEL MISPLACED ORDER
+                        #############################
                         logger.info('Order no more smartly placed : following condition is not true anymore:\n (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
                         result=kraken.cancel_order(CURRENT_BUYING_ORDER_ID)
                         if(result!=DONE):
