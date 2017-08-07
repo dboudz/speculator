@@ -7,22 +7,14 @@ Created on Mon Jul 31 18:48:18 2017
 """
 
 import time
-import datetime
-import socket,http
 import sys,os
 import krakenex
-import time
-import json,requests
 import logging
-import math
+import notifier
 
-from sqlalchemy import create_engine
-import pandas
-import numpy as np
-from pushbullet import Pushbullet
 
 # Init var
-key_pushbullet=os.environ['KEY_PUSHBULLET']
+
 SERVER_NAME=os.environ['SERVER_NAME']
 
 # Init parameters
@@ -30,7 +22,6 @@ api_key=os.environ['API_KEY']
 api_sign=os.environ['API_SIGN']
 SERVER_NAME=os.environ['SERVER_NAME']
 DATABASE_URL=os.environ['DATABASE_URL']
-
 
 # Logging Management
 logger = logging.getLogger(__name__)
@@ -179,30 +170,12 @@ def buy(volume,price,currency='XXRPZEUR'):
         new_buying_order=result.get('result').get('txid')[0]
         logger.info("Buying Order creation success : "+str(new_buying_order))
     return new_buying_order
-    
-
 
     logger.debug(result)
     
-    
-    return result
     #{'error': [], 'result': {'descr': {'order': 'buy 100.00000000 XRPEUR @ limit 0.100000'}, 'txid': ['OHLVH2-GYDQ5-YQM6GP']}}
 
 def get_currency_value(currency_separated_by_commas='XXRPZEUR'):
     req_data = {'pair': currency_separated_by_commas}
     cur=exchange_call(PRIVACY_PUBLIC,'Ticker',req_data)
     return cur
-
-def notify(title='Default Title',text='Default Text'):
-    global pb
-    pb=Pushbullet(key_pushbullet)
-    
-    #TODO DISGUSTING
-    if(SERVER_NAME!='MBP-David-'):
-        try:
-            pb.push_note('['+title+']',"At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+"\n"+text)
-        except Exception as e:
-            logger.error('Pushbullet Error '+str(e))
-    else:
-        logger.debug('['+title+']'+ "At "+str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'))+" (server time)\n"+text)
-
