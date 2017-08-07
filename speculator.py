@@ -11,7 +11,11 @@ import persistenceHandler
 import logging
 import businessLogic
 
+#TODO IMPROVEMENTS : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
+# Cela évitera d'acheter à tous les paliers si on est dans une descente
+
 # Var initialization
+AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
 CRAWLED_CURRENCIES=os.environ['CRAWLED_CURRENCIES']
 
 # Logging Management
@@ -155,6 +159,9 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price():
 list_trader=budgetCalculation(list_trader)
 
 logger.info("------- Let's Trade Baby------------------- ;)")
+logger.info("------- Speculator buying mode is :"+str(AUTHORIZATION_OF_BUYING)+" ")
+logger.info("------- --------------------------------------")
+    
 while(1==1):
     # Get current exchange time
     kraken_time=kraken.get_server_unixtime()
@@ -269,37 +276,43 @@ while(1==1):
         logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
         # calculate budget, get the right trader  and launch buying
         list_trader=budgetCalculation(list_trader)
-        # /!\ check from lowest trader to higher trader is essential
-        SELECTED_TRADER_ID_FOR_BUYING=-1
-        for index in range(number_of_traders-1,-1,-1):
-            # If trader's buy price is higher than value price we have the right trader
-            if(list_trader[index][2]>=currency_actual_ask_price):
-                # index of selected trader is index+1 (lower )
-                ##############
-                # BUYING ORDER
-                ##############
-                SELECTED_TRADER_ID_FOR_BUYING=index+1
-                # Checking it trader is available:
-                if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
-                    # Calculate volume to buy
-                    volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
-                    logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
-                    logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
-                    logger.info("          buying volume :"+str(volume_to_buy))
-                    logger.info("          For further analysis, unix time is "+str(kraken_time))
-                
-                    # create buying order
-                    created_buying_order=kraken.buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
-                    logger.info("Buying order "+str(created_buying_order)+" was created")
-                    # /!\set up right status and cut budget setup selling order 
-                    list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
-                    list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
-                    list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
-                    # setup buying mode to avoir other buy attempt
-                    EXISTS_OPEN_BUYING_ORDERS=True
-                else:
-                    logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
-                break;
+        
+        #Check if the speculator has right to buy:
+        if AUTHORIZATION_OF_BUYING==True:
+            logger.info("Remember : Speculator is allowed to trade")
+            # /!\ check from lowest trader to higher trader is essential
+            SELECTED_TRADER_ID_FOR_BUYING=-1
+            for index in range(number_of_traders-1,-1,-1):
+                # If trader's buy price is higher than value price we have the right trader
+                if(list_trader[index][2]>=currency_actual_ask_price):
+                    # index of selected trader is index+1 (lower )
+                    ##############
+                    # BUYING ORDER
+                    ##############
+                    SELECTED_TRADER_ID_FOR_BUYING=index+1
+                    # Checking it trader is available:
+                    if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
+                        # Calculate volume to buy
+                        volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                        logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
+                        logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
+                        logger.info("          buying volume :"+str(volume_to_buy))
+                        logger.info("          For further analysis, unix time is "+str(kraken_time))
+                    
+                        # create buying order
+                        created_buying_order=kraken.buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                        logger.info("Buying order "+str(created_buying_order)+" was created")
+                        # /!\set up right status and cut budget setup selling order 
+                        list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
+                        list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
+                        list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
+                        # setup buying mode to avoir other buy attempt
+                        EXISTS_OPEN_BUYING_ORDERS=True
+                    else:
+                        logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
+                    break;
+        else:
+            logger.info("Speculator is actually in mode AUTHORIZATION_OF_BUYING==False")
     else:
         if(EXISTS_OPEN_BUYING_ORDERS==True):
             # On ne verifie pas l'ordre du top trader (on ne peut rien faire de toute manière)
