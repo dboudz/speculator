@@ -60,11 +60,11 @@ def budgetCalculation(list_trader):
         else:
             list_trader[index][5]=0.0
             logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-            logger.debug('Budget for above traders is going to be remove')
+            logger.debug('Budget for above traders is going to be removed !')
             for index_above_trader in range(index,-1,-1):
                 list_trader[index_above_trader][5]=0.0
-                logger.debug('Trader '+str(index)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
-
+                logger.debug('Trader '+str(index_above_trader)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
+                available_budget=0
     # Display budget
     logger.info("------Display of Final budget ----")
     for index in range(0,number_of_traders):
