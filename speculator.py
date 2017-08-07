@@ -192,8 +192,23 @@ while(1==1):
     # Getting fresh version of the list and compare
     fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type()
     fresh_oe_id_list=[]
+    fresh_oe_buyint_id_list=[]
     for elem in fresh_open_orders_ids_list:
         fresh_oe_id_list.append(elem[0])
+        if(elem[1]==BUYING):
+            fresh_oe_buyint_id_list.append(elem[0])
+            
+    # Test number of buying orders
+    if(len(fresh_oe_buyint_id_list)>1):
+        logger.error("More than 1 buying order detected")
+        notifier.notify("Fatal Error","More than 1 buying order detected "+str(fresh_oe_buyint_id_list))
+        logger.error("Trying to cancel everything before shutdown")
+        for oetc in fresh_oe_buyint_id_list:
+            res=NOT_DONE
+            while(res!=DONE):
+                res=kraken.cancel_order(oetc)
+        logger.error("Exiting")
+        exit(1)
     
     for oe in list_open_orders_with_ids:
         if oe[0] not in fresh_oe_id_list:
@@ -267,6 +282,7 @@ while(1==1):
             EXISTS_OPEN_BUYING_ORDERS=True
             BUYING_TRADER_ID=list_trader[index][0]
             CURRENT_BUYING_ORDER_ID=list_trader[index][3]
+            
             # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
             if(EXISTS_OPEN_BUYING_ORDERS):
                 if(list_trader[BUYING_TRADER_ID][3] in kraken.get_closed_orders().keys()):
