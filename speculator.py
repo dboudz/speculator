@@ -202,6 +202,7 @@ while(1==1):
             # Get details about closed orders for notification
             closed_orders=kraken.get_closed_orders()
             coe=closed_orders.get(oe[0])
+            volume=float(coe.get('vol'))
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
             notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
@@ -238,10 +239,15 @@ while(1==1):
                         ####################################################
                         list_trader[index][3]=None
                         list_trader[index][4]=WAITING
-                        # budget will be calculated in the iteration
+                        # Budget will be calculated in the iteration
                         list_trader[index][5]=0.0
                         logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(WAITING))
-                        # TODO : Ajouter un petit quelque chose pour comptabiliser le gain ?
+                        
+                        # Special notification if to give you benefits
+                        if(list_trader[index][4]==BUYING):
+                            benefits=businessLogic.estimate_benefits(list_trader[index][4][2],volume,list_trader[index][4][2]+step_between_unit_sell_and_unit_price)
+                            notifier.notify("Congrats","Benefits are little bit under "+str()+"€")
+                            logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str()+"€")
                         break;
 
     # Finally setup open order to freshest list

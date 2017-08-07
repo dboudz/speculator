@@ -49,7 +49,13 @@ def check_traders_configuration(budget_available_on_exchange,number_of_traders,l
     return is_config_viable
 
 def calculate_fee(budget):
-    return(budget/100)*FEE_PERCENTAGE
+    return (budget/100)*FEE_PERCENTAGE
+
+def estimate_benefits(unit_buy_price,volume,unit_sell_price):
+    invest_amount=(unit_buy_price*volume)+calculate_fee(unit_buy_price*volume)
+    sell_amount=(unit_sell_price*volume)-calculate_fee(unit_sell_price*volume)
+    gain=round(sell_amount-invest_amount,5)
+    return gain
 
 def get_maximum_volume_to_buy_with_budget(budget,unit_price):
     budget_minus_fee=budget - calculate_fee(budget)
