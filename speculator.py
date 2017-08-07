@@ -48,6 +48,31 @@ def increment_sequence():
     return sequence_number
 
 
+def budgetCalculation(list_trader):
+    logger.info("------Begin calculating the budget for each trader before buying----")
+    available_budget=0
+    for index in range(0,number_of_traders):
+        # Define budget available for current trader 
+        if(list_trader[index][4]==WAITING):
+            available_budget=available_budget+list_trader[index][1]
+            list_trader[index][5]=available_budget
+            logger.debug('Trader '+str(index)+' has a budget of '+str(available_budget)+' €')
+        else:
+            list_trader[index][5]=0.0
+            logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
+            logger.debug('Budget for above traders is going to be remove')
+            for index_above_trader in range(index,-1,-1):
+                list_trader[index_above_trader][5]=0.0
+                logger.debug('Trader '+str(index)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
+
+    # Display budget
+    logger.info("------Display of Final budget ----")
+    for index in range(0,number_of_traders):
+        logger.info('Trader '+str(index)+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index_above_trader][5]))
+    
+    logger.info("------End of Budget Calculation----")
+    return list_trader
+
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget
 list_trader=[]
 list_trader.append([increment_sequence(),8.0,0.163,None,WAITING,0.0])
@@ -116,6 +141,9 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price():
             break;
     if is_order_mapped==False:
         logger.info('Order '+str(open_selling_order[0])+' is NOT MAPPED')
+
+# Calculate budget for further tests
+list_trader=budgetCalculation(list_trader)
 
 # TODO
 # Check that available budget EURO/XRP is compliant with open orders, budget  
@@ -233,31 +261,8 @@ while(1==1):
     # If market is growing and no one is buying, check bugdet
     if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
         logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
-        # get the right trader, and launch buying
-        logger.info("------Begin calculating the budget for each trader before buying----")
-        # ERROR : if there is a selling trader, above trader are supposed to have 0 budget
-        available_budget=0
-        for index in range(0,number_of_traders):
-            # Define budget available for current trader 
-            if(list_trader[index][4]==WAITING):
-                available_budget=available_budget+list_trader[index][1]
-                list_trader[index][5]=available_budget
-                logger.debug('Trader '+str(index)+' has a budget of '+str(available_budget)+' €')
-            else:
-                list_trader[index][5]=0.0
-                logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-                logger.debug('Budget for above traders is going to be remove')
-                for index_above_trader in range(index,-1,-1):
-                    list_trader[index_above_trader][5]=0.0
-                    logger.debug('Trader '+str(index)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
-
-        # Display budget
-        logger.info("------Display of Final budget ----")
-        for index in range(0,number_of_traders):
-            logger.info('Trader '+str(index)+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index_above_trader][5]))
-        
-        logger.info("------End of Budget Calculation----")
-        
+        # calculate budget, get the right trader  and launch buying
+        list_trader=budgetCalculation(list_trader)
         # /!\ check from lowest trader to higher trader is essential
         SELECTED_TRADER_ID_FOR_BUYING=-1
         for index in range(number_of_traders-1,-1,-1):
