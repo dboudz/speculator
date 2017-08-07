@@ -13,6 +13,9 @@ import businessLogic
 
 #TODO IMPROVEMENTS : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
 # Cela évitera d'acheter à tous les paliers si on est dans une descente
+# Pas sur de ce truc....
+
+# yana bug sur la detection des closed orders
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -201,27 +204,43 @@ while(1==1):
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
             
             # If an BUY order was closed, search the concerned speculator to create sell order
-            if(oe[1]==BUYING):
-                logger.info("Buying order "+str(oe[0])+" just closed, searching trader")
+            if(oe[1]==BUYING or oe[1]==SELLING ):
+                logger.info("order "+str(oe[0])+" just closed, searching trader")
                 for index in range(0,number_of_traders):
                     if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0]):
-                        logger.info("Buying order "+str(oe[0])+" was originally created by trader "+str(index)+".")
-                        ########################
-                        # CREATING SELLING ORDER
-                        ########################
-                        # Get available amount of currency
-                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe[0])
-                        logger.info("Volume to sell is :"+str(volume_buyed_to_sell))
-                        if(volume_buyed_to_sell>0.0):
-                            unit_selling_price=list_trader[index][2]+step_between_unit_sell_and_unit_price
-                            logger.info("Unit sell price is:"+str(unit_selling_price))
-                            # Selling order:
-                            created_selling_order=kraken.sell(volume_buyed_to_sell,unit_selling_price)
-                            list_trader[index][3]=str(created_selling_order)
-                            list_trader[index][4]=SELLING
+                        logger.info(str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        if(oe[1]==BUYING):
+                            ########################
+                            # CREATING SELLING ORDER
+                            ########################
+                            # Get available amount of currency
+                            volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe[0])
+                            logger.info("Volume to sell is :"+str(volume_buyed_to_sell))
+                            if(volume_buyed_to_sell>0.0):
+                                unit_selling_price=list_trader[index][2]+step_between_unit_sell_and_unit_price
+                                logger.info("Unit sell price is:"+str(unit_selling_price))
+                                # Selling order:
+                                created_selling_order=kraken.sell(volume_buyed_to_sell,unit_selling_price)
+                                list_trader[index][3]=str(created_selling_order)
+                                list_trader[index][4]=SELLING
+                                list_trader[index][5]=0.0
+                                logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
+                                break;
+                    if(list_trader[index][4]==SELLING and list_trader[index][3]==oe[0]):
+                        logger.info(str(SELLING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        # double check and then set speculator to wait mode
+                        ##########################
+                        # ENJOYING SELL COMPLETION
+                        ##########################
+                        if(oe[1]==SELLING):
+                            list_trader[index][3]=None
+                            list_trader[index][4]=WAITING
+                            # budget will be calculated in the iteration
                             list_trader[index][5]=0.0
-                            logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
+                            logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(WAITING))
+                            # TODO : Ajouter un petit quelque chose pour comptabiliser le gain ?
                             break;
+                            
     # Finally setup open order to freshest list
     list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
