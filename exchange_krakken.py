@@ -40,20 +40,19 @@ DONE=0
 NOT_DONE=1
 
 
-# TODO SEPARER EXCHANGE ET BUSINESS LOGIC
 def exchange_call(privacy,function,parameters={}):
     result=None
     if(privacy==PRIVACY_PRIVATE):
         try:
             result=krakken_connection.query_private(function,parameters)
-        except:
+        except Exception as e:
             logger.info(function+' private faced an error. Resetting exchange & retrying the request')
             reset()
             result=krakken_connection.query_private(function,parameters)
     if(privacy==PRIVACY_PUBLIC):
         try:
             result=krakken_connection.query_public(function,parameters)
-        except:
+        except Exception as e:
             logger.info(function+' public faced an error. Resetting exchange & retrying the request')
             reset()
             result=krakken_connection.query_public(function,parameters)
@@ -150,6 +149,7 @@ def sell(volume,price,currency='XXRPZEUR'):
     validation=result.get('error')
     if(len(validation)>0):
         logger.error("Selling Order creation failed. Exiting")
+        notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
         exit(1)
     else:
         new_selling_order=result.get('result').get('txid')[0]
@@ -165,6 +165,7 @@ def buy(volume,price,currency='XXRPZEUR'):
     validation=result.get('error')
     if(len(validation)>0):
         logger.error("Buying Order creation failed. Exiting")
+        notifier.notify("Fatal Error","Buying Order creation failed. Exiting")
         exit(1)
     else:
         new_buying_order=result.get('result').get('txid')[0]

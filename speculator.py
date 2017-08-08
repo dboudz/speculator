@@ -137,7 +137,7 @@ for order_with_type in list_open_orders_with_ids:
         if(kraken.cancel_order(order_with_type[0])==DONE):
             logger.info("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
         else:
-            logger.error("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
+            logger.error("Buying Order "+str(order_with_type[0])+" coundn't be closed at initialization of speculator")
             notifier.notify('Fatal Error',"Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
             exit(1)
 # Reinitializing buying list:
@@ -252,6 +252,10 @@ while(1==1):
                         ####################################################
                         # MANAGE SELL ENJOYMENT, OR BUY CANCELATION
                         ####################################################
+                        flag_benefit=False
+                        if(list_trader[index][4]==SELLING):
+                            flag_benefit=True
+                            
                         list_trader[index][3]=None
                         list_trader[index][4]=WAITING
                         # Budget will be calculated in the iteration
@@ -259,7 +263,7 @@ while(1==1):
                         logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(WAITING))
                         
                         # Special notification if to give you benefits
-                        if(list_trader[index][4]==SELLING):
+                        if(flag_benefit):
                             benefits=businessLogic.estimate_benefits(list_trader[index][4][2],volume,list_trader[index][4][2]+step_between_unit_sell_and_unit_price)
                             notifier.notify("Congrats","If configuration did t change, Benefits are little bit under "+str()+"€")
                             logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str()+"€")
