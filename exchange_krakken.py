@@ -50,7 +50,13 @@ def exchange_call(privacy,function,parameters={}):
             logger.info(function+' Error was :'+str(e))
             reset()
             logger.info(function+' Second try for '+str(function))
-            result=krakken_connection.query_private(function,parameters)
+            try:
+                result=krakken_connection.query_private(function,parameters)
+            except Exception as e:
+                logger.info(function+' again,public faced an error. Resetting exchange & retrying the request')
+                logger.info(function+' Error was :'+str(e))
+                logger.info(function+' Exiting application')
+                exit(1)
     if(privacy==PRIVACY_PUBLIC):
         try:
             result=krakken_connection.query_public(function,parameters)
@@ -59,7 +65,14 @@ def exchange_call(privacy,function,parameters={}):
             logger.info(function+' Error was :'+str(e))
             reset()
             logger.info(function+' Second try for '+str(function))
-            result=krakken_connection.query_public(function,parameters)
+            try:
+                result=krakken_connection.query_public(function,parameters)
+            except Exception as e:
+                logger.info(function+' again,public faced an error. Resetting exchange & retrying the request')
+                logger.info(function+' Error was :'+str(e))
+                logger.info(function+' Exiting application')
+                exit(1)
+            
     return result
 
 
