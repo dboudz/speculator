@@ -47,14 +47,18 @@ def exchange_call(privacy,function,parameters={}):
             result=krakken_connection.query_private(function,parameters)
         except Exception as e:
             logger.info(function+' private faced an error. Resetting exchange & retrying the request')
+            logger.info(function+' Error was :'+str(e))
             reset()
+            logger.info(function+' Second try for '+str(function))
             result=krakken_connection.query_private(function,parameters)
     if(privacy==PRIVACY_PUBLIC):
         try:
             result=krakken_connection.query_public(function,parameters)
         except Exception as e:
             logger.info(function+' public faced an error. Resetting exchange & retrying the request')
+            logger.info(function+' Error was :'+str(e))
             reset()
+            logger.info(function+' Second try for '+str(function))
             result=krakken_connection.query_public(function,parameters)
     return result
 

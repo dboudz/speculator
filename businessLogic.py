@@ -89,7 +89,7 @@ def it_market_increasing(ts_last_minutes_ask_price):
     #logger.debug('Slope ' + str(coefficients[0]))
     #logger.debug('NRMSE: ' + str(nrmse))
     
-    #TODO tester plus tard la régression linéaire
+    #TO IMPROVE tester plus tard la régression linéaire
     #model = pd.ols(y=ts,x=ts.index,intercept=True)
     is_trend_positive=True
     if(coefficients[0]<0):
