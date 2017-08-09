@@ -16,7 +16,10 @@ import notifier
 # Cela évitera d'acheter à tous les paliers si on est dans une descente
 # Pas sur de ce truc....
 
-#TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
+# TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
+# IL FAUT UNE METHODE D ACHAT SECURISEE AVEC UN TIME
+
+
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -112,7 +115,7 @@ else:
 for order_with_type in list_open_orders_with_ids:
     if(order_with_type[1]==BUYING):
         logger.info("Buying Order "+str(order_with_type[0])+" is going to be cancel by speculator initialization")
-        if(kraken.cancel_order(order_with_type[0])==DONE):
+        if(kraken.secure_cancel_order(order_with_type[0])==DONE):
             logger.info("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
         else:
             logger.error("Buying Order "+str(order_with_type[0])+" coundn't be closed at initialization of speculator")
@@ -197,7 +200,7 @@ while(1==1):
         for oetc in fresh_oe_buyint_id_list:
             res=NOT_DONE
             while(res!=DONE):
-                res=kraken.cancel_order(oetc)
+                res=kraken.secure_cancel_order(oetc)
         logger.error("Exiting")
         exit(1)
     
@@ -285,6 +288,12 @@ while(1==1):
                 if(list_trader[BUYING_TRADER_ID][3] in kraken.get_closed_orders().keys()):
                     logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
                     notifier.notify('Fatal Error','Can t cancel order '+str("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order"))
+                    # TODO CAS A GERER : SI UN ORDRE D ACHAT EST EXECUTE INSTANTANEMENT
+                    #2017-08-09T07:59:12.678240+00:00 app[worker.1]: 2017-08-09 07:59:12,678 exchange_krakken INFO     Buying Order creation success : OBW7M4-4NDNE-LAFACK
+                    #2017-08-09T07:59:12.678431+00:00 app[worker.1]: 2017-08-09 07:59:12,678 __main__     INFO     Buying order OBW7M4-4NDNE-LAFACK was created
+                    #2017-08-09T07:59:12.993037+00:00 app[worker.1]: 2017-08-09 07:59:12,992 __main__     INFO     Crawled values 0.165055 for currency XRPEUR
+                    #2017-08-09T07:59:43.772148+00:00 app[worker.1]: 2017-08-09 07:59:43,771 __main__     ERROR    EXISTS_OPEN_BUYING_ORDERS is set to True but order OBW7M4-4NDNE-LAFACK is a closed order
+
                     exit(1)
     
     # Get trading informations only if no other speculators are buying
@@ -341,7 +350,7 @@ while(1==1):
                         logger.info("          For further analysis, unix time is "+str(kraken_time))
                     
                         # create buying order
-                        created_buying_order=kraken.buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                        created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
                         logger.info("Buying order "+str(created_buying_order)+" was created")
                         # /!\set up right status and cut budget setup selling order 
                         list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
@@ -373,7 +382,7 @@ while(1==1):
                         # CANCEL MISPLACED ORDER
                         #############################
                         logger.info('Order no more smartly placed : following condition is not true anymore:\n (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
-                        result=kraken.cancel_order(CURRENT_BUYING_ORDER_ID)
+                        result=kraken.secure_cancel_order(CURRENT_BUYING_ORDER_ID)
                         if(result!=DONE):
                             logger.error('Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
                             notifier.notify('Fatal Error','Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))

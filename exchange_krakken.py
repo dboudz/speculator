@@ -40,6 +40,26 @@ DONE=0
 NOT_DONE=1
 
 
+
+def secure_buy(volume,price,currency='XXRPZEUR'):
+    # Before buying, check that there is no order with same characteristics
+    open_orders=get_open_orders()
+    time.sleep(5)
+    oe_parameters=[]
+    # Getting orders vol,price
+    for oeid in open_orders:
+        oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
+    # Checking if we have a duplicate
+    do_buy=True
+    for oeid_char in oe_parameters:
+        if(volume==oeid_char[1] and price==oeid_char[2]):
+            logger.error("An order with same characteristics already exist ("+str(oeid_char[0])+")!")
+            do_buy==False
+    if(do_buy==True):
+        logger.debug("There is no buying order with same characteristics, buy ordre creation can pursue")
+        time.sleep(1)
+        return buy(volume,price,currency)
+    
 def exchange_call(privacy,function,parameters={}):
     result=None
     if(privacy==PRIVACY_PRIVATE):
@@ -136,19 +156,39 @@ def get_closed_order_volume_by_id(id_order):
 def get_closed_orders():
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
     return (dict_closed_orders.get('result').get('closed'))
-  
-def cancel_order(order_id):
+
+def secure_cancel_order(order_id):
     req_data={'txid':order_id}
-    cancel_order=exchange_call(PRIVACY_PRIVATE,'CancelOrder',req_data)
-    logger.debug(cancel_order)
-    validation=cancel_order.get('error')
-    if(len(validation)>0):
-        logger.error("Cancel Order  failed. Exiting")
-        return NOT_DONE
-    else:
-        logger.info("Cancel Order success ")
-    return DONE 
-    #{'error': [], 'result': {'count': 1}}
+    function='CancelOrder'
+    cmpt=1
+    status_of_function=NOT_DONE
+    while(status_of_function!=DONE):
+        try:
+            logger.info(function+' :try number '+str(cmpt)+' for '+str(function))
+            result=krakken_connection.query_private('CancelOrder',req_data)
+            print(result)
+            if(len(result.get('error'))>0):
+                #{'error': [], 'result': {'count': 1}}
+                error_type=result.get('error')[0]
+                if( (error_type == 'EOrder:Invalid order') or ('EOrder:Unknown order' in error_type)):
+                    logger.warn(function+' :Order '+str(order_id)+' not found (EOrder:Invalid order), but it seems to be ok ')
+                    status_of_function=DONE
+                else:
+                    logger.warn(function+' :Cant handle error '+str(result)+ 'cancel order will be re-processed' )
+            else:
+                result=DONE
+            if(cmpt>10  and cmpt%10==0):
+                logger.info(function+' :'+str(cmpt)+' fail ! notifying ...')
+                notifier.notify('Need You',str(cmpt)+' fail  on cancel order\n ! cant handle error'+str(result))
+        except Exception as e:
+            logger.info(function+' : private faced an error. Resetting exchange & retrying the request')
+            logger.info(function+' : Exception was :'+str(e))
+            logger.info(function+' : Resetting & waiting :'+str(e))
+            reset()
+        cmpt=cmpt+1
+    logger.info(function+'OK for '+str(function))
+    return DONE
+    
       
 
 def get_server_unixtime():
