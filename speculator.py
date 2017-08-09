@@ -249,7 +249,7 @@ while(1==1):
                             unit_selling_price=list_trader[index][2]+step_between_unit_sell_and_unit_price
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:
-                            created_selling_order=kraken.sell(volume_buyed_to_sell,unit_selling_price)
+                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price)
                             list_trader[index][3]=str(created_selling_order)
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0

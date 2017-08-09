@@ -40,26 +40,136 @@ DONE=0
 NOT_DONE=1
 
 
-
-def secure_buy(volume,price,currency='XXRPZEUR'):
+def get_buying_order_with_same_pattern(volume,price):
     # Before buying, check that there is no order with same characteristics
+    logger.info(" Getting eventual buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
     open_orders=get_open_orders()
     time.sleep(5)
     oe_parameters=[]
     # Getting orders vol,price
-    for oeid in open_orders:
-        oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
-    # Checking if we have a duplicate
-    do_buy=True
-    for oeid_char in oe_parameters:
-        if(volume==oeid_char[1] and price==oeid_char[2]):
-            logger.error("An order with same characteristics already exist ("+str(oeid_char[0])+")!")
-            do_buy==False
-    if(do_buy==True):
-        logger.debug("There is no buying order with same characteristics, buy ordre creation can pursue")
-        time.sleep(1)
-        return buy(volume,price,currency)
+    for oeid in open_orders.keys():
+        if(open_orders.get(oeid).get('descr').get('type')=='buy' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price'))):
+            oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
+    if(len(oe_parameters)>0):
+        logger.info(" Founded buying orders with same characteristics :"+str(oe_parameters))
+    else:
+        logger.info(" No buying orders founded same characteristics :"+str(oe_parameters))
+    return oe_parameters
+
+def get_selling_order_with_same_pattern(volume,price):
+    # Before buying, check that there is no order with same characteristics
+    logger.info(" Getting eventual selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
+    open_orders=get_open_orders()
+    time.sleep(5)
+    oe_parameters=[]
+    # Getting orders vol,price
+    for oeid in open_orders.keys():
+        if(open_orders.get(oeid).get('descr').get('type')=='sell' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price'))):
+            oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
+    if(len(oe_parameters)>0):
+        logger.info(" Founded selling orders with same characteristics :"+str(oe_parameters))
+    else:
+        logger.info(" No selling orders founded same characteristics :"+str(oe_parameters))
+    return oe_parameters
+
+def secure_buy(volume,price,currency='XXRPZEUR'):
+    # Check for existing open orders
+    existing_open_orders=get_open_orders_ids_and_type()
+    flag_existing_oe=False
+    new_buying_order=''
     
+    for oe in existing_open_orders:
+        if(oe[1]=='buy'):
+            flag_existing_oe=True
+    # If no existing open ordres, create order and wait until confirmation
+    if(flag_existing_oe==False):
+        req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
+        req_result={}
+        
+        try:
+            req_result=krakken_connection.query_private('AddOrder',req_data)
+            #{'error': [], 'result': {'descr': {'order': 'buy 30.00000000 XRPEUR @ limit 0.120000'}, 'txid': ['O55YD2-UXKMI-PPPXYP']}}
+            validation=req_result.get('error')
+            if(len(validation)>0):
+                logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
+                notifier.notify("Fatal Error","Buying Order creation failed. Exiting")
+                exit(1)
+            else:
+                new_buying_order=req_result.get('result').get('txid')[0]
+                logger.info("Buying Order creation success : "+str(new_buying_order))
+        except Exception as e:
+            if(str.strip(str(e)) =='The read operation timed out'):
+                 logger.warn(" Creation of buying order return error "+str(e))
+                 logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
+                 reset()
+                 cmpt=0
+                 while(cmpt<10):
+                     logger.warn(" Try "+str(cmpt)+" for getting open order")
+                     oeid_char=get_buying_order_with_same_pattern(volume,price)
+                     if(len(oeid_char)>0):
+                         if(len(oeid_char))>1:
+                             logger.error("More than 1 buying order with same parameters : "+str(oeid_char))
+                             notifier.notify("Fatal Error","More than 1 buying order with same parameters : "+str(oeid_char))
+                             exit(1)
+                         else:
+                             cmpt=10000
+                             new_buying_order=oeid_char[0][0]
+                             logger.info("1 Open buying order with same characteristics found, it's our order created ! : "+str(oeid_char))
+                     else:
+                         logger.warn(" sleep 3 second before next try")
+                         time.sleep(3)
+                         cmpt=cmpt+1
+    else:
+        logger.error("Existing buying open orders already present, Exiting "+str(existing_open_orders))
+        notifier.notify("Fatal Error","Existing buying open orders already present, Exiting "+str(existing_open_orders))
+        exit(1)
+    return new_buying_order
+
+    
+
+def secure_sell(volume,price,currency='XXRPZEUR'):
+    
+    req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
+    req_result={}
+    new_selling_order=''
+    
+    try:
+        req_result=krakken_connection.query_private('AddOrder',req_data)
+        validation=req_result.get('error')
+        if(len(validation)>0):
+            logger.error("Selling Order creation failed. Here is the req_result "+str(req_result))
+            notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
+            exit(1)
+        else:
+            new_selling_order=req_result.get('result').get('txid')[0]
+            logger.info("Selling Order creation success : "+str(new_selling_order))
+    except Exception as e:
+        if(str.strip(str(e)) =='The read operation timed out'):
+             logger.warn(" Creation of selling order return error "+str(e))
+             logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
+             reset()
+             cmpt=0
+             while(cmpt<10):
+                 logger.warn(" Try "+str(cmpt)+" for getting open order")
+                 oeid_char=get_selling_order_with_same_pattern(volume,price)
+                 if(len(oeid_char)>0):
+                     if(len(oeid_char))>1:
+                         logger.error("More than 1 selling order with same parameters : "+str(oeid_char))
+                         notifier.notify("Fatal Error","More than 1 selling order with same parameters : "+str(oeid_char))
+                         exit(1)
+                     else:
+                         cmpt=10000
+                         new_selling_order=oeid_char[0][0]
+                         logger.info("1 Open selling order with same characteristics found, it's our order created ! : "+str(oeid_char))
+                 else:
+                     logger.warn(" sleep 3 second before next try")
+                     time.sleep(3)
+                     cmpt=cmpt+1
+
+    return new_selling_order
+
+
+   
 def exchange_call(privacy,function,parameters={}):
     result=None
     if(privacy==PRIVACY_PRIVATE):
@@ -122,7 +232,7 @@ def get_balance_for_currency(currency):
 def get_open_orders_ids():
     return list(get_open_orders().keys())
 
-# return [['id', 'type']]
+
 def get_open_orders_ids_and_type():
     list_open_orders=[]
     dict_open_orders=get_open_orders()
@@ -176,7 +286,7 @@ def secure_cancel_order(order_id):
                 else:
                     logger.warn(function+' :Cant handle error '+str(result)+ 'cancel order will be re-processed' )
             else:
-                result=DONE
+                status_of_function=DONE
             if(cmpt>10  and cmpt%10==0):
                 logger.info(function+' :'+str(cmpt)+' fail ! notifying ...')
                 notifier.notify('Need You',str(cmpt)+' fail  on cancel order\n ! cant handle error'+str(result))
@@ -186,7 +296,7 @@ def secure_cancel_order(order_id):
             logger.info(function+' : Resetting & waiting :'+str(e))
             reset()
         cmpt=cmpt+1
-    logger.info(function+'OK for '+str(function))
+    logger.info(function+' OK for '+str(function))
     return DONE
     
       
@@ -198,40 +308,6 @@ def get_server_unixtime():
     #Tips for SQL to Timestamp postgres = select to_timestamp(1501523090);
     return unix_time_integer
 
-def sell(volume,price,currency='XXRPZEUR'):
-    req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
-    result=exchange_call(PRIVACY_PRIVATE,'AddOrder',req_data)
-    logger.debug(result) 
-    
-    validation=result.get('error')
-    if(len(validation)>0):
-        logger.error("Selling Order creation failed. Exiting")
-        notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
-        exit(1)
-    else:
-        new_selling_order=result.get('result').get('txid')[0]
-        logger.info("Selling Order creation success : "+str(new_selling_order))
-    return new_selling_order 
-
-def buy(volume,price,currency='XXRPZEUR'):
-    req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
-    result=exchange_call(PRIVACY_PRIVATE,'AddOrder',req_data)
-    logger.debug(result)
-    new_buying_order=''
-    
-    validation=result.get('error')
-    if(len(validation)>0):
-        logger.error("Buying Order creation failed. Exiting")
-        notifier.notify("Fatal Error","Buying Order creation failed. Exiting")
-        exit(1)
-    else:
-        new_buying_order=result.get('result').get('txid')[0]
-        logger.info("Buying Order creation success : "+str(new_buying_order))
-    return new_buying_order
-
-    logger.debug(result)
-    
-    #{'error': [], 'result': {'descr': {'order': 'buy 100.00000000 XRPEUR @ limit 0.100000'}, 'txid': ['OHLVH2-GYDQ5-YQM6GP']}}
 
 def get_currency_value(currency_separated_by_commas='XXRPZEUR'):
     req_data = {'pair': currency_separated_by_commas}
