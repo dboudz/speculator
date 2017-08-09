@@ -82,20 +82,38 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget
-allowed_budget=144.0
-expected_gain_by_band=0.05
-number_of_traders=8
+allowed_budget=154.0
+expected_gain_by_band=0.02
+number_of_traders=22
 step_between_unit_sell_and_unit_price=0.001
        
 list_trader=[]
-list_trader.append([increment_sequence(),18.0,0.166,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.165,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.164,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.163,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.162,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.161,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.160,None,WAITING,0.0])
-list_trader.append([increment_sequence(),18.0,0.159,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.164,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.163,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.163,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.161,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.160,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.159,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.158,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.157,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.156,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.155,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.154,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.153,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.152,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.151,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.150,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.149,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.148,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.147,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.146,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.145,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.144,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.143,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.142,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.141,None,WAITING,0.0])
+list_trader.append([increment_sequence(),7.0,0.140,None,WAITING,0.0])
+
 
 
 
