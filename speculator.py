@@ -65,7 +65,6 @@ def budgetCalculation(list_trader):
         if(list_trader[index][4]==WAITING):
             available_budget=available_budget+list_trader[index][1]
             list_trader[index][5]=available_budget
-            logger.debug('Trader '+str(index)+' has a budget of '+str(available_budget)+' €')
         else:
             list_trader[index][5]=0.0
             logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
@@ -77,7 +76,7 @@ def budgetCalculation(list_trader):
     # Display budget
     logger.info("------Display of Final budget ----")
     for index in range(0,number_of_traders):
-        logger.info('Trader '+str(index)+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index][5]))
+        logger.info('Trader '+str(index)+', buyer at '+str(list_trader[index][2])+' is in '+list_trader[index][4]+' mode with a budget of '+str(list_trader[index][5]))
     
     logger.info("------End of Budget Calculation----")
     return list_trader
