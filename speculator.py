@@ -16,7 +16,7 @@ import notifier
 # Cela évitera d'acheter à tous les paliers si on est dans une descente
 # Pas sur de ce truc....
 
-#TODO
+#TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -213,7 +213,7 @@ while(1==1):
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
             # Don't send notification for cancel order
-            if(oe[1]!=SELLING):
+            if(status!=CANCELED):
                 notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
