@@ -113,10 +113,14 @@ test_required_budget=0
 for index in range(0,number_of_traders):
     test_required_budget=test_required_budget+list_trader[index][5]
 test_available_budget=kraken.get_balance_EUR()
+
 if(test_available_budget<test_required_budget):
     logger.error("Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
     notifier.notify('Fatal Error',"Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
     exit(1)
+else:
+    logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
+
 
 # Closing All buying orders (security)
 for order_with_type in list_open_orders_with_ids:
@@ -208,7 +212,9 @@ while(1==1):
             volume=float(coe.get('vol'))
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
-            notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
+            # Don't send notification for cancel order
+            if(oe[1]!=SELLING):
+                notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
             
