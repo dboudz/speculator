@@ -180,9 +180,9 @@ while(1==1):
     # Get current exchange time
     kraken_time=kraken.get_server_unixtime()
     
-    ######################
-    # Crawl and store data
-    ######################
+    #############################
+    # STEP 0 Crawl and store data
+    #############################
     crawled_currencies=kraken.get_currency_value(CRAWLED_CURRENCIES)
     currency_actual_ask_price=float(crawled_currencies.get('result').get(TRADING_CURRENCY).get('a')[0])
     if(crawled_currencies != None):
@@ -192,9 +192,9 @@ while(1==1):
     logger.info("Crawled values "+str(currency_actual_ask_price)+" for currency "+str(CRAWLED_CURRENCIES))
     time.sleep(15)
     
-    ###############################################################
-    # Check for closed Orders and perform corresponding actions
-    ###############################################################
+    ##################################################################
+    # STEP 1 Check for closed Orders and perform corresponding actions
+    ##################################################################
     # Getting fresh version of the list and compare
     fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type()
     fresh_oe_id_list=[]
@@ -251,6 +251,7 @@ while(1==1):
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:
                             created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price)
+                            fresh_open_orders_ids_list.append([str(created_selling_order),SELLING])
                             list_trader[index][3]=str(created_selling_order)
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
@@ -298,6 +299,7 @@ while(1==1):
                 BUYING_TRADER_ID=list_trader[index][0]
                 CURRENT_BUYING_ORDER_ID=list_trader[index][3]
                 
+                # C'est débile, un ordre peut etre clos entre STEP 1 et STEP2
 #                # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
 #                if(EXISTS_OPEN_BUYING_ORDERS):
 #                    cl_orders=kraken.get_closed_orders()
@@ -368,6 +370,7 @@ while(1==1):
                             # create buying order
                             created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
                             logger.info("Buying order "+str(created_buying_order)+" was created")
+                            list_open_orders_with_ids.append([created_buying_order,BUYING])
                             # /!\set up right status and cut budget setup selling order 
                             list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
                             list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
