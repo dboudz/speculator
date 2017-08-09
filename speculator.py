@@ -108,19 +108,6 @@ if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),num
 else:
     logger.info("[V] Configuration of trader is valid [V]")
 
-# Check that budget available on exchange is compliant 
-test_required_budget=0 
-for index in range(0,number_of_traders):
-    test_required_budget=test_required_budget+list_trader[index][5]
-test_available_budget=kraken.get_balance_EUR()
-
-if(test_available_budget<test_required_budget):
-    logger.error("Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
-    notifier.notify('Fatal Error',"Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
-    exit(1)
-else:
-    logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
-
 
 # Closing All buying orders (security)
 for order_with_type in list_open_orders_with_ids:
@@ -156,6 +143,21 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price():
 
 # Calculate budget for further tests
 list_trader=budgetCalculation(list_trader)
+
+# Check that budget available on exchange is compliant 
+test_required_budget=0 
+for index in range(0,number_of_traders):
+    test_required_budget=test_required_budget+list_trader[index][5]
+test_available_budget=kraken.get_balance_EUR()
+
+if(test_available_budget<test_required_budget):
+    logger.error("Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
+    notifier.notify('Fatal Error',"Euros available on exchange ("+str(test_available_budget)+") are not enough to match configuration ("+str(test_required_budget)+")")
+    exit(1)
+else:
+    logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
+
+
 
 logger.info("---------------------------------------------------")
 logger.info("------- Let's Trade Baby------------------------ ;)")
