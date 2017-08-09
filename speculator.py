@@ -110,9 +110,6 @@ list_trader.append([increment_sequence(),7.0,0.146,None,WAITING,0.0])
 list_trader.append([increment_sequence(),7.0,0.145,None,WAITING,0.0])
 list_trader.append([increment_sequence(),7.0,0.144,None,WAITING,0.0])
 list_trader.append([increment_sequence(),7.0,0.143,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.142,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.141,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.140,None,WAITING,0.0])
 
 
 
