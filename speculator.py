@@ -216,10 +216,11 @@ while(1==1):
         logger.error("Exiting")
         exit(1)
     
+    DO_STEP2=True
     for oe in list_open_orders_with_ids:
         if oe[0] not in fresh_oe_id_list:
             logger.info('Order '+oe[0]+' is not in fresh open order list')
-
+            DO_STEP2=False
             # Get details about closed orders for notification
             closed_orders=kraken.get_closed_orders()
             coe=closed_orders.get(oe[0])
@@ -281,127 +282,129 @@ while(1==1):
     list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
     
-    ##########################
-    # Traders
-    ##########################
-    CAN_LAUNCH_BUYING_ORDER=False
-    CURRENT_BUYING_ORDER_ID=-1
-    # Check if a trader is buying, else set up to buy
-    EXISTS_OPEN_BUYING_ORDERS=False
-    BUYING_TRADER_ID=-1
-    for index in range(0,number_of_traders):
-        if list_trader[index][4]==BUYING:
-            EXISTS_OPEN_BUYING_ORDERS=True
-            BUYING_TRADER_ID=list_trader[index][0]
-            CURRENT_BUYING_ORDER_ID=list_trader[index][3]
-            
-            # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
-            if(EXISTS_OPEN_BUYING_ORDERS):
-                cl_orders=kraken.get_closed_orders()
-                if(list_trader[BUYING_TRADER_ID][3] in cl_orders.keys()):
-                    logger.warn("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
-                    # Check if buying orders was immediatly closed or canceled
-                    delay_closing=cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('closetm')-cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('opentm')
-                    if(delay_closing<60):
-                        logger.info("Its ok, buying order was almost immediatly executed ("+str(delay_closing)+" sec)")
-                    else:
-                        logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
-                        notifier.notify('Fatal Error',"EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
-                        exit(1)
     
-    # Get trading informations only if no other speculators are buying
-    IS_TREND_GROWING=False
-    if(EXISTS_OPEN_BUYING_ORDERS==False):
-        df2=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,2)
-        df5=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,5)
-        df10=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,10)
-        df15=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,15)
+    if(DO_STEP2==True):
+        ##########################
+        # Traders
+        ##########################
+        CAN_LAUNCH_BUYING_ORDER=False
+        CURRENT_BUYING_ORDER_ID=-1
+        # Check if a trader is buying, else set up to buy
+        EXISTS_OPEN_BUYING_ORDERS=False
+        BUYING_TRADER_ID=-1
+        for index in range(0,number_of_traders):
+            if list_trader[index][4]==BUYING:
+                EXISTS_OPEN_BUYING_ORDERS=True
+                BUYING_TRADER_ID=list_trader[index][0]
+                CURRENT_BUYING_ORDER_ID=list_trader[index][3]
+                
+#                # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
+#                if(EXISTS_OPEN_BUYING_ORDERS):
+#                    cl_orders=kraken.get_closed_orders()
+#                    if(list_trader[BUYING_TRADER_ID][3] in cl_orders.keys()):
+#                        logger.warn("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
+#                        # Check if buying orders was immediatly closed or canceled
+#                        delay_closing=cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('closetm')-cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('opentm')
+#                        if(delay_closing<60):
+#                            logger.info("Its ok, buying order was almost immediatly executed ("+str(delay_closing)+" sec)")
+#                        else:
+#                            logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
+#                            notifier.notify('Fatal Error',"EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
+#                            exit(1)
         
-        trends2_is_growing=businessLogic.it_market_increasing(df2)
-        trends5_is_growing=businessLogic.it_market_increasing(df5)
-        trends10_is_growing=businessLogic.it_market_increasing(df10)
-        trends15_is_growing=businessLogic.it_market_increasing(df15)
-        logger.info('Trend data:  (Trend2:'+str(len(df2))+' elems),(Trend5:'+str(len(df5))+' elems),(Trend10:'+str(len(df10))+' elems),(Trend15='+str(len(df15))+' elems)')
-        
-        # Checking if trend is reliable
-        if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15):
-            if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
-            # Checking that trends number is enough:
-                logger.info("Market is good right now ")
-                IS_TREND_GROWING=True
-            else:
-                logger.info("Market is not good at this time ")
-        else:
-            logger.warn("Number of data for trends is not reliable")
-  
-    # If market is growing and no one is buying, check bugdet
-    if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
-        logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
-        # calculate budget, get the right trader  and launch buying
-        list_trader=budgetCalculation(list_trader)
-        
-        #Check if the speculator has right to buy:
-        if AUTHORIZATION_OF_BUYING==True:
-            logger.info("Remember : Speculator is allowed to trade")
-            # /!\ check from lowest trader to higher trader is essential
-            SELECTED_TRADER_ID_FOR_BUYING=-1
-            for index in range(number_of_traders-1,-1,-1):
-                # If trader's buy price is higher than value price we have the right trader
-                if(list_trader[index][2]>=currency_actual_ask_price):
-                    # index of selected trader is index+1 (lower )
-                    ###################
-                    # SET BUYING ORDER
-                    ##################
-                    SELECTED_TRADER_ID_FOR_BUYING=index+1
-                    # Checking it trader is available:
-                    if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
-                        # Calculate volume to buy
-                        volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
-                        logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
-                        logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
-                        logger.info("          buying volume :"+str(volume_to_buy))
-                        logger.info("          For further analysis, unix time is "+str(kraken_time))
-                    
-                        # create buying order
-                        created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
-                        logger.info("Buying order "+str(created_buying_order)+" was created")
-                        # /!\set up right status and cut budget setup selling order 
-                        list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
-                        list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
-                        list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
-                        # setup buying mode to avoir other buy attempt
-                        EXISTS_OPEN_BUYING_ORDERS=True
-                    else:
-                        logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
-                    break;
-        else:
-            logger.info("Speculator is actually in mode AUTHORIZATION_OF_BUYING==False")
-    else:
-        if(EXISTS_OPEN_BUYING_ORDERS==True):
-            # On ne verifie pas l'ordre du top trader (on ne peut rien faire de toute manière)
-            if(BUYING_TRADER_ID>0):
-                logger.info("Check if Trader "+str(BUYING_TRADER_ID)+" buying order has still potential to reach ")
-                # check if order is ok
-                buying_trader=list_trader[BUYING_TRADER_ID]
-                upper_buying_trader=list_trader[BUYING_TRADER_ID-1]
-                if(buying_trader[0]==BUYING_TRADER_ID and upper_buying_trader[0]==BUYING_TRADER_ID-1):
-                    # TODO Technical security : get open order details  and check them
-                    # Control is : market price has to be - upper or  equals to buyer unit price
-                    if(buying_trader[2]<= currency_actual_ask_price  and currency_actual_ask_price<upper_buying_trader[2] ):
-                        logger.info('Order is still rightly placed : (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
-                    else:
-                        #############################
-                        # CANCEL MISPLACED ORDER
-                        #############################
-                        logger.info('Order no more smartly placed : following condition is not true anymore:\n (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
-                        result=kraken.secure_cancel_order(CURRENT_BUYING_ORDER_ID)
-                        if(result!=DONE):
-                            logger.error('Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
-                            notifier.notify('Fatal Error','Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
-                            exit(1)
-                        else:
-                            logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False')
-                            EXISTS_OPEN_BUYING_ORDERS=False
+        # Get trading informations only if no other speculators are buying
+        IS_TREND_GROWING=False
+        if(EXISTS_OPEN_BUYING_ORDERS==False):
+            df2=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,2)
+            df5=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,5)
+            df10=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,10)
+            df15=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,15)
+            
+            trends2_is_growing=businessLogic.it_market_increasing(df2)
+            trends5_is_growing=businessLogic.it_market_increasing(df5)
+            trends10_is_growing=businessLogic.it_market_increasing(df10)
+            trends15_is_growing=businessLogic.it_market_increasing(df15)
+            logger.info('Trend data:  (Trend2:'+str(len(df2))+' elems),(Trend5:'+str(len(df5))+' elems),(Trend10:'+str(len(df10))+' elems),(Trend15='+str(len(df15))+' elems)')
+            
+            # Checking if trend is reliable
+            if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15):
+                if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
+                # Checking that trends number is enough:
+                    logger.info("Market is good right now ")
+                    IS_TREND_GROWING=True
                 else:
-                    logger.error("Technical Issue, trader tab is corrupted")
+                    logger.info("Market is not good at this time ")
+            else:
+                logger.warn("Number of data for trends is not reliable")
+      
+        # If market is growing and no one is buying, check bugdet
+        if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
+            logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
+            # calculate budget, get the right trader  and launch buying
+            list_trader=budgetCalculation(list_trader)
+            
+            #Check if the speculator has right to buy:
+            if AUTHORIZATION_OF_BUYING==True:
+                logger.info("Remember : Speculator is allowed to trade")
+                # /!\ check from lowest trader to higher trader is essential
+                SELECTED_TRADER_ID_FOR_BUYING=-1
+                for index in range(number_of_traders-1,-1,-1):
+                    # If trader's buy price is higher than value price we have the right trader
+                    if(list_trader[index][2]>=currency_actual_ask_price):
+                        # index of selected trader is index+1 (lower )
+                        ###################
+                        # SET BUYING ORDER
+                        ##################
+                        SELECTED_TRADER_ID_FOR_BUYING=index+1
+                        # Checking it trader is available:
+                        if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
+                            # Calculate volume to buy
+                            volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                            logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
+                            logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
+                            logger.info("          buying volume :"+str(volume_to_buy))
+                            logger.info("          For further analysis, unix time is "+str(kraken_time))
+                        
+                            # create buying order
+                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                            logger.info("Buying order "+str(created_buying_order)+" was created")
+                            # /!\set up right status and cut budget setup selling order 
+                            list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
+                            list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
+                            list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
+                            # setup buying mode to avoir other buy attempt
+                            EXISTS_OPEN_BUYING_ORDERS=True
+                        else:
+                            logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
+                        break;
+            else:
+                logger.info("Speculator is actually in mode AUTHORIZATION_OF_BUYING==False")
+        else:
+            if(EXISTS_OPEN_BUYING_ORDERS==True):
+                # On ne verifie pas l'ordre du top trader (on ne peut rien faire de toute manière)
+                if(BUYING_TRADER_ID>0):
+                    logger.info("Check if Trader "+str(BUYING_TRADER_ID)+" buying order has still potential to reach ")
+                    # check if order is ok
+                    buying_trader=list_trader[BUYING_TRADER_ID]
+                    upper_buying_trader=list_trader[BUYING_TRADER_ID-1]
+                    if(buying_trader[0]==BUYING_TRADER_ID and upper_buying_trader[0]==BUYING_TRADER_ID-1):
+                        # TODO Technical security : get open order details  and check them
+                        # Control is : market price has to be - upper or  equals to buyer unit price
+                        if(buying_trader[2]<= currency_actual_ask_price  and currency_actual_ask_price<upper_buying_trader[2] ):
+                            logger.info('Order is still rightly placed : (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
+                        else:
+                            #############################
+                            # CANCEL MISPLACED ORDER
+                            #############################
+                            logger.info('Order no more smartly placed : following condition is not true anymore:\n (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
+                            result=kraken.secure_cancel_order(CURRENT_BUYING_ORDER_ID)
+                            if(result!=DONE):
+                                logger.error('Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
+                                notifier.notify('Fatal Error','Can t cancel order '+str(CURRENT_BUYING_ORDER_ID))
+                                exit(1)
+                            else:
+                                logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False')
+                                EXISTS_OPEN_BUYING_ORDERS=False
+                    else:
+                        logger.error("Technical Issue, trader tab is corrupted")
 
