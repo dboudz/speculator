@@ -272,9 +272,9 @@ while(1==1):
                         
                         # Special notification if to give you benefits
                         if(flag_benefit):
-                            benefits=businessLogic.estimate_benefits(list_trader[index][4][2],volume,list_trader[index][4][2]+step_between_unit_sell_and_unit_price)
-                            notifier.notify("Congrats","If configuration did t change, Benefits are little bit under "+str()+"€")
-                            logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str()+"€")
+                            benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
+                            notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€")
+                            logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
                         break;
 
     # Finally setup open order to freshest list
