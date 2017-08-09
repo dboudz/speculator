@@ -12,14 +12,13 @@ import logging
 import businessLogic
 import notifier
 
-#TODO IMPROVEMENTS : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
-# Cela évitera d'acheter à tous les paliers si on est dans une descente
-# Pas sur de ce truc....
 
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
 # IL FAUT UNE METHODE D ACHAT SECURISEE AVEC UN TIME
 
-
+#IMPROVEMENTS : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
+# Cela évitera d'acheter à tous les paliers si on est dans une descente
+# Pas sur de ce truc....
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -49,8 +48,6 @@ BUYING='buy'
 TRADING_CURRENCY='XXRPZEUR'
 CLOSED='closed'
 CANCELED='canceled'
-
-
 
 
 sequence_number=-1
@@ -285,16 +282,17 @@ while(1==1):
             
             # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
             if(EXISTS_OPEN_BUYING_ORDERS):
-                if(list_trader[BUYING_TRADER_ID][3] in kraken.get_closed_orders().keys()):
-                    logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
-                    notifier.notify('Fatal Error','Can t cancel order '+str("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order"))
-                    # TODO CAS A GERER : SI UN ORDRE D ACHAT EST EXECUTE INSTANTANEMENT
-                    #2017-08-09T07:59:12.678240+00:00 app[worker.1]: 2017-08-09 07:59:12,678 exchange_krakken INFO     Buying Order creation success : OBW7M4-4NDNE-LAFACK
-                    #2017-08-09T07:59:12.678431+00:00 app[worker.1]: 2017-08-09 07:59:12,678 __main__     INFO     Buying order OBW7M4-4NDNE-LAFACK was created
-                    #2017-08-09T07:59:12.993037+00:00 app[worker.1]: 2017-08-09 07:59:12,992 __main__     INFO     Crawled values 0.165055 for currency XRPEUR
-                    #2017-08-09T07:59:43.772148+00:00 app[worker.1]: 2017-08-09 07:59:43,771 __main__     ERROR    EXISTS_OPEN_BUYING_ORDERS is set to True but order OBW7M4-4NDNE-LAFACK is a closed order
-
-                    exit(1)
+                cl_orders=kraken.get_closed_orders()
+                if(list_trader[BUYING_TRADER_ID][3] in cl_orders.keys()):
+                    logger.warn("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
+                    # Check if buying orders was immediatly closed or canceled
+                    delay_closing=cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('closetm')-cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('opentm')
+                    if(delay_closing<60):
+                        logger.info("Its ok, buying order was almost immediatly executed ("+str(delay_closing)+" sec)")
+                    else:
+                        logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
+                        notifier.notify('Fatal Error',"EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
+                        exit(1)
     
     # Get trading informations only if no other speculators are buying
     IS_TREND_GROWING=False
@@ -374,7 +372,6 @@ while(1==1):
                 if(buying_trader[0]==BUYING_TRADER_ID and upper_buying_trader[0]==BUYING_TRADER_ID-1):
                     # TODO Technical security : get open order details  and check them
                     # Control is : market price has to be - upper or  equals to buyer unit price
-                    #                                     - below upper trader buy price
                     if(buying_trader[2]<= currency_actual_ask_price  and currency_actual_ask_price<upper_buying_trader[2] ):
                         logger.info('Order is still rightly placed : (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
                     else:
