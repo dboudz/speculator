@@ -98,7 +98,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
                 new_buying_order=req_result.get('result').get('txid')[0]
                 logger.info("Buying Order creation success : "+str(new_buying_order))
         except Exception as e:
-            if(str.strip(str(e)) =='The read operation timed out'):
+            if(str.strip(str(e)) =='The read operation timed out' or str.strip(str('EService:Unavailable')) ==):
                  logger.warn(" Creation of buying order return error "+str(e))
                  logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
                  reset()
@@ -144,7 +144,7 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
             new_selling_order=req_result.get('result').get('txid')[0]
             logger.info("Selling Order creation success : "+str(new_selling_order))
     except Exception as e:
-        if(str.strip(str(e)) =='The read operation timed out'):
+        if(str.strip(str(e)) =='The read operation timed out'  or str.strip(str('EService:Unavailable')):
              logger.warn(" Creation of selling order return error "+str(e))
              logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
              reset()

@@ -16,7 +16,10 @@ import notifier
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
 # IL FAUT UNE METHODE D ACHAT SECURISEE AVEC UN TIME
 
-#IMPROVEMENTS : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
+# IMPROVEMENT : Persister les ordres d'achats et ventes pour pouvoir recréer un ordre manquant
+# et caculer les bénéfices pour les remettre dans le panier de trade
+
+# IMPROVEMENT : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
 # Cela évitera d'acheter à tous les paliers si on est dans une descente
 # Pas sur de ce truc....
 
@@ -239,7 +242,7 @@ while(1==1):
                 logger.info("order "+str(oe[0])+" just closed, searching trader")
                 for index in range(0,number_of_traders):
                     if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0] and status==CLOSED ):
-                        logger.info("1 "+str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        logger.info("1/ "+str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
                         ########################
                         # CREATING SELLING ORDER
                         ########################
@@ -258,7 +261,7 @@ while(1==1):
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                             break;
                     if(list_trader[index][3]==oe[0] and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
-                        logger.info("2 "+str(SELLING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        logger.info("2/ "+str(list_trader[index][4])+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
                         ####################################################
                         # MANAGE SELL ENJOYMENT, OR BUY CANCELATION
                         ####################################################
@@ -298,21 +301,6 @@ while(1==1):
                 EXISTS_OPEN_BUYING_ORDERS=True
                 BUYING_TRADER_ID=list_trader[index][0]
                 CURRENT_BUYING_ORDER_ID=list_trader[index][3]
-                
-                # C'est débile, un ordre peut etre clos entre STEP 1 et STEP2
-#                # Add a control : if no order and EXISTS_OPEN_BUYING_ORDERS=True
-#                if(EXISTS_OPEN_BUYING_ORDERS):
-#                    cl_orders=kraken.get_closed_orders()
-#                    if(list_trader[BUYING_TRADER_ID][3] in cl_orders.keys()):
-#                        logger.warn("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order")
-#                        # Check if buying orders was immediatly closed or canceled
-#                        delay_closing=cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('closetm')-cl_orders.get(list_trader[BUYING_TRADER_ID][3]).get('opentm')
-#                        if(delay_closing<60):
-#                            logger.info("Its ok, buying order was almost immediatly executed ("+str(delay_closing)+" sec)")
-#                        else:
-#                            logger.error("EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
-#                            notifier.notify('Fatal Error',"EXISTS_OPEN_BUYING_ORDERS is set to True but order "+str(list_trader[BUYING_TRADER_ID][3])+" is a closed order (delay between open and close is "+str(delay_closing)+" secs)")
-#                            exit(1)
         
         # Get trading informations only if no other speculators are buying
         IS_TREND_GROWING=False
