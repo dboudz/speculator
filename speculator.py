@@ -308,16 +308,20 @@ while(1==1):
             df2=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,2)
             df5=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,5)
             df10=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,10)
-            df15=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,15)
+            # I take 16 mins to be sure having at least 14.5 mins
+            df15=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,16)
             
             trends2_is_growing=businessLogic.it_market_increasing(df2)
             trends5_is_growing=businessLogic.it_market_increasing(df5)
             trends10_is_growing=businessLogic.it_market_increasing(df10)
             trends15_is_growing=businessLogic.it_market_increasing(df15)
+            
+            delay_covered=(max(df15.index) - min(df15.index)).seconds
+            logger.info('Covered delay = '+str(delay_covered/60) +" mins")
             logger.info('Trend data:  (Trend2:'+str(len(df2))+' elems),(Trend5:'+str(len(df5))+' elems),(Trend10:'+str(len(df10))+' elems),(Trend15='+str(len(df15))+' elems)')
             
             # Checking if trend is reliable
-            if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15):
+            if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15 and (delay_covered/60.0)>=14.5):
                 if(trends2_is_growing and trends5_is_growing and trends10_is_growing and trends15_is_growing):
                 # Checking that trends number is enough:
                     logger.info("Market is good right now ")
