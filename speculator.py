@@ -85,7 +85,7 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget
-allowed_budget=164.0
+allowed_budget=154.0
 expected_gain_by_band=0.02
 number_of_traders=22
 step_between_unit_sell_and_unit_price=0.001
