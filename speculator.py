@@ -268,7 +268,7 @@ while(1==1):
                             list_trader[index][5]=0.0
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                             # persist link between buying order & selling order
-                            persistenceHandler.storeTrade(oe[0],str(created_selling_order))
+                            persistenceHandler.storeTrade(oe[0],str(created_selling_order),allowed_budget)
                             break;
                     if(list_trader[index][3]==oe[0] and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
                         logger.info("2/ "+str(list_trader[index][4])+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")

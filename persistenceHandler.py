@@ -116,17 +116,19 @@ def initDB():
     sql_create_trade_table="""
     create table if not exists trade(
         buying_order_id character varying,
-        selling_order_id character varying
+        selling_order_id character varying,
+        budget float
     );"""
     conn.execute(sql_create_trade_table)
 
  
-def storeTrade(buying_order_id,selling_order_id):
+def storeTrade(buying_order_id,selling_order_id,budget):
     try:
-        sql_insert=""" INSERT INTO trade(buying_order_id,selling_order_id) values
+        sql_insert=""" INSERT INTO trade(buying_order_id,selling_order_id,budget) values
         (
         '"""+str(buying_order_id)+"""',
-        '"""+str(selling_order_id)+"""'
+        '"""+str(selling_order_id)+"""',
+        """+str(budget)+"""
         );
         """
         conn.execute(sql_insert)
