@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 import pandas
 import os
 import logging
+import datetime
 
 # Logging Management
 logger = logging.getLogger(__name__)
@@ -122,6 +123,29 @@ def initDB():
     conn.execute(sql_create_trade_table)
 
  
+    
+def get_todays_benefits():
+    today_sql =str(f"{datetime.datetime.now():%Y-%m-%d}")
+    return get_benefit_by_day(today_sql)
+    
+def get_benefit_by_day(day):
+    try:
+        sql_get_benefice_by_day="""
+        select bod.order_id as buying_order_id,bod.volume as volume,bod.price as unit_buy_price,sod.order_id as selling_order_id,sod.price as unit_sell_price from closed_orders sod , trade tr, closed_orders bod
+        where 
+        sod.order_type ='sell' and date_trunc('day',sod.closing_date)='"""+day+"""'
+        and tr.selling_order_id=sod.order_id
+        and tr.buying_order_id=bod.order_id
+        and bod.volume=sod.volume;
+        """
+        df_benefice_by_day=pandas.read_sql(sql_get_benefice_by_day,conn)
+        return df_benefice_by_day
+    except Exception as e:
+        logger.error("Failing get_benefit_by_day . This was the error "+str(e))
+        return None
+    
+    
+    
 def storeTrade(buying_order_id,selling_order_id,budget):
     try:
         sql_insert=""" INSERT INTO trade(buying_order_id,selling_order_id,budget) values

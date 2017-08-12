@@ -287,9 +287,15 @@ while(1==1):
                         
                         # Special notification if to give you benefits
                         if(flag_benefit):
-                            benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
-                            notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€")
-                            logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
+                            try:
+                                benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
+                                todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
+                                businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
+                                notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[0])+"€ (in "+str(todays_benefits[1])+" trades)")
+                                logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
+                                logger.info("---------------------Total for today-> "+str(todays_benefits[0])+"€ ("+str(todays_benefits[1])+"trades)")
+                            except Exception as e:
+                                logger.info("fail to send Special notification for benefit. error was "+str(e))
                         break;
 
     # Finally setup open order to freshest list

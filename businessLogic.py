@@ -51,6 +51,16 @@ def check_traders_configuration(budget_available_on_exchange,number_of_traders,l
 def calculate_fee(budget):
     return (budget/100)*FEE_PERCENTAGE
 
+# return (nb of trades, total_benefits)
+def calculate_today_benefits(df_benefice_by_day):
+    if df_benefice_by_day!= None :
+        total_benefits=0
+        for trade in df_benefice_by_day.itertuples():
+            total_benefits=total_benefits+estimate_benefits(trade.unit_buy_price,trade.volume,trade.unit_sell_price)
+        return (len(df_benefice_by_day),round(total_benefits,3))
+    else:
+        return (0,0.0)
+
 def estimate_benefits(unit_buy_price,volume,unit_sell_price):
     invest_amount=(unit_buy_price*volume)+calculate_fee(unit_buy_price*volume)
     sell_amount=(unit_sell_price*volume)-calculate_fee(unit_sell_price*volume)
