@@ -20,12 +20,12 @@ from matplotlib import pyplot as plt
 
 currency='XXRPZEUR'
 kraken.init()
-init_time=kraken.get_server_unixtime()
+#init_time=kraken.get_server_unixtime()
 
 
 # Init parameters
-engine = create_engine('postgresql://azalead:azalead@localhost:5432/speculator')    
-conn = engine.connect()
+#engine = create_engine('postgresql://azalead:azalead@localhost:5432/speculator')    
+#conn = engine.connect()
 
 #epoch=0
 #for now in range(init_time-244800,init_time,60):
@@ -84,80 +84,99 @@ conn = engine.connect()
 #    epoch=epoch+1
 
 
+#
+## Get crawled values from 10 last mins
+#sql="""select * from analysis order by momentum asc;"""
+#df_last_minutes=pandas.read_sql(sql,conn)
+#df_last_minutes.momentum=pandas.to_datetime(df_last_minutes.momentum)
+#df_last_minutes.price=df_last_minutes.price.astype(float)
+#df_last_minutes.buy5=df_last_minutes.buy5.astype(str)
+#
+#
+#
+#
+#color_d = {'green': 'g', 'red': 'r'}
+#
+#df_last_minutes_g = df_last_minutes[df_last_minutes['buy5'] == 'green']
+#df_last_minutes_r = df_last_minutes[df_last_minutes['buy5'] == 'red']
+#df_last_minutes.buy5.map(color_d)
+#plt.figure(1)
+#plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
+#plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
+#plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
+#
+#df_last_minutes_g = df_last_minutes[df_last_minutes['buy10'] == 'green']
+#df_last_minutes_r = df_last_minutes[df_last_minutes['buy10'] == 'red']
+#df_last_minutes.buy10.map(color_d)
+#plt.figure(2)
+#plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
+#plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
+#plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
+#
+#df_last_minutes_g = df_last_minutes[df_last_minutes['buy15'] == 'green']
+#df_last_minutes_r = df_last_minutes[df_last_minutes['buy15'] == 'red']
+#df_last_minutes.buy15.map(color_d)
+#plt.figure(3)
+#plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
+#plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
+#plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
+#
+#
+#df_last_minutes_g = df_last_minutes[df_last_minutes['buy20'] == 'green']
+#df_last_minutes_r = df_last_minutes[df_last_minutes['buy20'] == 'red']
+#df_last_minutes.buy20.map(color_d)
+#plt.figure(4)
+#plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
+#plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
+#plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
+#
+#
+#def transform(row):
+#    if(row['buy2']==row['buy5'] and row['buy5']==row['buy10'] and row['buy10']==row['buy15'] and row['buy5']=='green'):
+#        return 'green'
+#    else:
+#        return 'red'
+#
+#df_last_minutes['test']=df_last_minutes.apply( lambda row:transform(row),axis=1)
+#
+#
+#
+#df_last_minutes_g = df_last_minutes[df_last_minutes['test'] == 'green']
+#df_last_minutes_r = df_last_minutes[df_last_minutes['test'] == 'red']
+#df_last_minutes.test.map(color_d)
+#plt.figure(5)
+#plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
+#plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
+#plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
+#
+#
+#plt.show()
+##c=ts_b5
+##ax.scatter(df_last_minutes.momentum.values, df_last_minutes.price.values)
+#
+#
+##df_last_minutes.plot(kind='scatter', x='momentum', y='price')
+#
+##plt.scatter(df_last_minutes.momentum,df_last_minutes.price)
+#
+#
+## CA CA MARCHE df_last_minutes.plot(x='momentum', y='price', style=".",c='r')
 
-# Get crawled values from 10 last mins
-sql="""select * from analysis order by momentum asc;"""
-df_last_minutes=pandas.read_sql(sql,conn)
-df_last_minutes.momentum=pandas.to_datetime(df_last_minutes.momentum)
-df_last_minutes.price=df_last_minutes.price.astype(float)
-df_last_minutes.buy5=df_last_minutes.buy5.astype(str)
 
 
 
+## Rattrapage des ordres qui n'avaient pas été enregistrés
+#rattrapage=[]
+#
+#closed_orders=kraken.get_closed_orders()
+#for coeid in rattrapage:
+#    coe=closed_orders.get(coeid)
+#    price=float(coe.get('price'))
+#    volume=float(coe.get('vol'))
+#    status=str(coe.get('status'))
+#    descr=str(coe.get('descr'))
+#    opening_date=str(coe.get('opentm'))
+#    closing_date=str(coe.get('closetm'))
+#    ttype=str(coe.get('descr').get('type'))
+#    persistenceHandler.storeClosedOrder(coeid,opening_date,closing_date,price,volume,ttype,status)
 
-color_d = {'green': 'g', 'red': 'r'}
-
-df_last_minutes_g = df_last_minutes[df_last_minutes['buy5'] == 'green']
-df_last_minutes_r = df_last_minutes[df_last_minutes['buy5'] == 'red']
-df_last_minutes.buy5.map(color_d)
-plt.figure(1)
-plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
-plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
-plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
-
-df_last_minutes_g = df_last_minutes[df_last_minutes['buy10'] == 'green']
-df_last_minutes_r = df_last_minutes[df_last_minutes['buy10'] == 'red']
-df_last_minutes.buy10.map(color_d)
-plt.figure(2)
-plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
-plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
-plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
-
-df_last_minutes_g = df_last_minutes[df_last_minutes['buy15'] == 'green']
-df_last_minutes_r = df_last_minutes[df_last_minutes['buy15'] == 'red']
-df_last_minutes.buy15.map(color_d)
-plt.figure(3)
-plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
-plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
-plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
-
-
-df_last_minutes_g = df_last_minutes[df_last_minutes['buy20'] == 'green']
-df_last_minutes_r = df_last_minutes[df_last_minutes['buy20'] == 'red']
-df_last_minutes.buy20.map(color_d)
-plt.figure(4)
-plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
-plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
-plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
-
-
-def transform(row):
-    if(row['buy2']==row['buy5'] and row['buy5']==row['buy10'] and row['buy10']==row['buy15'] and row['buy5']=='green'):
-        return 'green'
-    else:
-        return 'red'
-
-df_last_minutes['test']=df_last_minutes.apply( lambda row:transform(row),axis=1)
-
-
-
-df_last_minutes_g = df_last_minutes[df_last_minutes['test'] == 'green']
-df_last_minutes_r = df_last_minutes[df_last_minutes['test'] == 'red']
-df_last_minutes.test.map(color_d)
-plt.figure(5)
-plt.plot(df_last_minutes.momentum.values, df_last_minutes.price.values, 'b')
-plt.plot(df_last_minutes_g.momentum.values, df_last_minutes_g.price.values,'x', c='g')
-plt.plot(df_last_minutes_r.momentum.values, df_last_minutes_r.price.values,'x', c='r')
-
-
-plt.show()
-#c=ts_b5
-#ax.scatter(df_last_minutes.momentum.values, df_last_minutes.price.values)
-
-
-#df_last_minutes.plot(kind='scatter', x='momentum', y='price')
-
-#plt.scatter(df_last_minutes.momentum,df_last_minutes.price)
-
-
-# CA CA MARCHE df_last_minutes.plot(x='momentum', y='price', style=".",c='r')

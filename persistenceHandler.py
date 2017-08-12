@@ -115,13 +115,25 @@ def initDB():
     logger.debug("create if not exist table trade")
     sql_create_trade_table="""
     create table if not exists trade(
-        trade_date timestamp without time zone,
         buying_order_id character varying,
-        selling_order_id character varying,
-        benefit float
+        selling_order_id character varying
     );"""
     conn.execute(sql_create_trade_table)
 
+ 
+def storeTrade(buying_order_id,selling_order_id):
+    try:
+        sql_insert=""" INSERT INTO trade(buying_order_id,selling_order_id) values
+        (
+        '"""+str(buying_order_id)+"""',
+        '"""+str(selling_order_id)+"""'
+        )
+        """
+        conn.execute(sql_insert)
+    except Exception as e:
+        logger.error("Failing persisting closed order. This was the error "+str(e))
+        return 1
+    return 0
     
     #df = pd.read_sql_query("select * from lol2 limit 5;", conn)
     
