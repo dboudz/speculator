@@ -127,11 +127,11 @@ def storeTrade(buying_order_id,selling_order_id):
         (
         '"""+str(buying_order_id)+"""',
         '"""+str(selling_order_id)+"""'
-        )
+        );
         """
         conn.execute(sql_insert)
     except Exception as e:
-        logger.error("Failing persisting closed order. This was the error "+str(e))
+        logger.error("Failing persisting storeTrade . This was the error "+str(e))
         return 1
     return 0
     
