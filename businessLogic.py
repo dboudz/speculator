@@ -60,7 +60,7 @@ def estimate_benefits(unit_buy_price,volume,unit_sell_price):
 def get_maximum_volume_to_buy_with_budget(budget,unit_price):
     budget_minus_fee=budget - calculate_fee(budget)
     max_buy_volume=math.floor(budget_minus_fee/unit_price)
-    logger.info('Maximum buy volume is '+str(max_buy_volume))
+    #logger.info('Maximum buy volume is '+str(max_buy_volume))
     return max_buy_volume
 
 #project(42,0.001,0.08,0.163,1000)
@@ -100,12 +100,12 @@ def project(nb_traders	,step_between_traders,minimal_trade_benefit,max_unit_buy_
         for trader in range(0+1,nb_traders+1):
             budget=minimal_budget[trader-1]
             cumulated_budget=cumulated_budget+budget
-            unit_bp=unit_bp-step_between_traders
-            unit_sp=unit_bp+step_between_traders
-            minimal_volume=get_maximum_volume_to_buy_with_budget(budget,unit_bp)
-            minimal_benefit=estimate_benefits(unit_bp,minimal_volume,unit_sp)
-            maximal_volume=get_maximum_volume_to_buy_with_budget(cumulated_budget,unit_bp)
-            maximal_benefit=estimate_benefits(unit_bp,maximal_volume,unit_sp)
+            unit_bp=round(unit_bp-step_between_traders,5)
+            unit_sp=round(unit_bp+step_between_traders,5)
+            minimal_volume=round(get_maximum_volume_to_buy_with_budget(budget,unit_bp),5)
+            minimal_benefit=round(estimate_benefits(unit_bp,minimal_volume,unit_sp),5)
+            maximal_volume=round(get_maximum_volume_to_buy_with_budget(cumulated_budget,unit_bp),5)
+            maximal_benefit=round(estimate_benefits(unit_bp,maximal_volume,unit_sp),5)
             print("Trader"+str(trader)+" budget "+str(budget)+" cumulated "+str(cumulated_budget)+" Unit buy price:"+str(unit_bp)+" Unit sell price:"+str(unit_sp)+" Minimal benefit:"+str(minimal_benefit)+" Maximal benefit:"+str(maximal_benefit))
 
             
@@ -160,6 +160,6 @@ def calculate_minimum_sell_price_to(volume,unit_price,objective=1.0):
         potential_gain=sell_price-buy_price-buy_fee-sell_fee
         
     unit_sell_price=round( (sell_price/volume) ,5)
-    logger.debug('Minimum unit sell price to fit the objective is '+str(unit_sell_price))
+    #logger.debug('Minimum unit sell price to fit the objective is '+str(unit_sell_price))
     return unit_sell_price
 

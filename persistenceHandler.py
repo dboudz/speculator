@@ -54,6 +54,7 @@ def getCrawling(currency=""):
     return df 
     
 
+
 def initDB():
     # Create table for currency crawling
     logger.debug("create if not exist table crawling")
@@ -97,6 +98,29 @@ def initDB():
     );
     """
     conn.execute(sql_create_crawling_table)
+    
+    logger.debug("create if not exist table closed_orders")
+    sql_create_closed_orders_table="""
+    create table if not exists closed_orders(
+        order_id character varying,
+        opening_date timestamp without time zone,
+        closing_date timestamp without time zone,
+        price float,
+        volume float,
+        order_type character varying,
+		is_a_cancelation_order character varying
+    );"""
+    conn.execute(sql_create_closed_orders_table)
+    
+    logger.debug("create if not exist table trade")
+    sql_create_trade_table="""
+    create table if not exists trade(
+        trade_date timestamp without time zone,
+        buying_order_id character varying,
+        selling_order_id character varying,
+        benefit float
+    );"""
+    conn.execute(sql_create_trade_table)
 
     
     #df = pd.read_sql_query("select * from lol2 limit 5;", conn)
@@ -111,7 +135,24 @@ def initDB():
 #    h = high array(<today>, <last 24 hours>),
 #    o = today's opening price
 
-
+def storeClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,is_a_cancelation_order):
+    try:
+        sql_insert=""" INSERT INTO closed_orders(order_id,opening_date,closing_date,price,volume,order_type,is_a_cancelation_order) values
+        (
+        '"""+str(order_id)+"""',
+        to_timestamp("""+str(opening_date)+"""),
+        to_timestamp("""+str(closing_date)+"""),
+        """+str(price)+""",
+        """+str(volume)+""",
+        '"""+str(order_type)+"""',
+        '"""+str(is_a_cancelation_order)+"""'
+        )
+        """
+        conn.execute(sql_insert)
+    except Exception as e:
+        logger.error("Failing persisting closed order. This was the error "+str(e))
+        return 1
+    return 0
 
 def storeBuyingSignal(timestamp,currency,ask_price):
     

@@ -227,12 +227,20 @@ while(1==1):
             # Get details about closed orders for notification
             closed_orders=kraken.get_closed_orders()
             coe=closed_orders.get(oe[0])
+            price=float(coe.get('price'))
             volume=float(coe.get('vol'))
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
-            # Don't send notification for cancel order
+            opening_date=str(coe.get('opentm'))
+            closing_date=str(coe.get('closetm'))
+
+            # Don't send notification and dont store  cancel order
             if(status!=CANCELED):
+                # Notify
                 notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
+                # Persist closing order
+                persistenceHandler.storeClosedOrder(oe[0],opening_date,closing_date,price,volume,oe[1],status)
+
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
             
