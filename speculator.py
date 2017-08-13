@@ -14,14 +14,8 @@ import notifier
 
 
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
-# IL FAUT UNE METHODE D ACHAT SECURISEE AVEC UN TIME
-
-# IMPROVEMENT : Persister les ordres d'achats et ventes pour pouvoir recréer un ordre manquant
-# et caculer les bénéfices pour les remettre dans le panier de trade
-
-# IMPROVEMENT : FORBID BUYING IF UPPER STEP IS ALREADY BUYED
-# Cela évitera d'acheter à tous les paliers si on est dans une descente
-# Pas sur de ce truc....
+# TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
+# IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -290,7 +284,7 @@ while(1==1):
                             try:
                                 benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
                                 todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
-                                businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
+                                logger.info("Todays Benefits are "+str(todays_benefits))
                                 notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[0])+"€ (in "+str(todays_benefits[1])+" trades)")
                                 logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
                                 logger.info("---------------------Total for today-> "+str(todays_benefits[0])+"€ ("+str(todays_benefits[1])+"trades)")

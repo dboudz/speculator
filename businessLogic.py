@@ -53,7 +53,8 @@ def calculate_fee(budget):
 
 # return (nb of trades, total_benefits)
 def calculate_today_benefits(df_benefice_by_day):
-    if df_benefice_by_day!= None :
+    logger.debug('df_benefice_by_day is '+str(df_benefice_by_day))
+    if df_benefice_by_day is not None :
         total_benefits=0
         for trade in df_benefice_by_day.itertuples():
             total_benefits=total_benefits+estimate_benefits(trade.unit_buy_price,trade.volume,trade.unit_sell_price)
