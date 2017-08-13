@@ -83,6 +83,7 @@ allowed_budget=154.0
 expected_gain_by_band=0.02
 number_of_traders=22
 step_between_unit_sell_and_unit_price=0.001
+minimum_buying_price=0.143
        
 list_trader=[]
 list_trader.append([increment_sequence(),7.0,0.164,None,WAITING,0.0])
@@ -348,7 +349,7 @@ while(1==1):
             list_trader=budgetCalculation(list_trader)
             
             #Check if the speculator has right to buy:
-            if AUTHORIZATION_OF_BUYING==True:
+            if AUTHORIZATION_OF_BUYING==True and currency_actual_ask_price>=minimum_buying_price:
                 logger.info("Remember : Speculator is allowed to trade")
                 # /!\ check from lowest trader to higher trader is essential
                 SELECTED_TRADER_ID_FOR_BUYING=-1
@@ -361,9 +362,7 @@ while(1==1):
                         ##################
                         SELECTED_TRADER_ID_FOR_BUYING=index+1
                         # Checking if we are under budget
-                        flag_under_budget=False
-                        if(SELECTED_TRADER_ID_FOR_BUYING<number_of_traders and flag_under_budget==False):
-                            flag_under_budget==True
+
                         # Checking it trader is available:
                         if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
                             # Calculate volume to buy
@@ -385,9 +384,6 @@ while(1==1):
                             EXISTS_OPEN_BUYING_ORDERS=True
                         else:
                             logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
-                            if flag_under_budget==False:
-                                logger.info(" No more Speculator available for this low market.")
-
                         break;
             else:
                 logger.info("Speculator is actually in mode AUTHORIZATION_OF_BUYING==False")
