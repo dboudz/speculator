@@ -366,6 +366,10 @@ while(1==1):
                         # SET BUYING ORDER
                         ##################
                         SELECTED_TRADER_ID_FOR_BUYING=index+1
+                        # Checking if we are under budget
+                        flag_under_budget=False
+                        if(SELECTED_TRADER_ID_FOR_BUYING<number_of_traders and flag_under_budget==False):
+                            flag_under_budget==True
                         # Checking it trader is available:
                         if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
                             # Calculate volume to buy
@@ -387,6 +391,9 @@ while(1==1):
                             EXISTS_OPEN_BUYING_ORDERS=True
                         else:
                             logger.info("Speculator wanted with trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+" is already in "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4])+" mode")
+                            if flag_under_budget==False:
+                                logger.info(" No more Speculator available for this low market.")
+
                         break;
             else:
                 logger.info("Speculator is actually in mode AUTHORIZATION_OF_BUYING==False")
