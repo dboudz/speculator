@@ -12,7 +12,8 @@ import logging
 import businessLogic
 import notifier
 
-
+# Ajouter le controle de cohérence entre le portefeuille XRP 
+# GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
 # TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
 # IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
@@ -20,6 +21,7 @@ import notifier
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
 CRAWLED_CURRENCIES=os.environ['CRAWLED_CURRENCIES']
+NOTIFY_ON_CLOSED_ORDERS=bool(os.environ['NOTIFY_ON_CLOSED_ORDERS']=='True')
 
 # Logging Management
 logger = logging.getLogger(__name__)
@@ -79,36 +81,56 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget
-allowed_budget=154.0
-expected_gain_by_band=0.02
-number_of_traders=22
+allowed_budget=650.0
+expected_gain_by_band=0.05
+number_of_traders=42
 step_between_unit_sell_and_unit_price=0.001
-minimum_buying_price=0.143
+minimum_buying_price=0.121
+# Available 69
        
 list_trader=[]
-list_trader.append([increment_sequence(),7.0,0.164,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.163,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.163,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.161,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.160,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.159,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.158,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.157,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.156,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.155,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.154,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.153,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.152,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.151,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.150,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.149,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.148,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.147,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.146,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.145,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.144,None,WAITING,0.0])
-list_trader.append([increment_sequence(),7.0,0.143,None,WAITING,0.0])
-
+list_trader.append([increment_sequence(),17.0,0.162,None,WAITING,0.0])
+list_trader.append([increment_sequence(),17.0,0.161,None,WAITING,0.0])
+list_trader.append([increment_sequence(),17.0,0.160,None,WAITING,0.0])
+list_trader.append([increment_sequence(),17.0,0.159,None,WAITING,0.0])
+list_trader.append([increment_sequence(),17.0,0.158,None,WAITING,0.0])
+list_trader.append([increment_sequence(),16.0,0.157,None,WAITING,0.0])
+list_trader.append([increment_sequence(),16.0,0.156,None,WAITING,0.0])
+list_trader.append([increment_sequence(),16.0,0.155,None,WAITING,0.0])
+list_trader.append([increment_sequence(),16.0,0.154,None,WAITING,0.0])
+list_trader.append([increment_sequence(),16.0,0.153,None,WAITING,0.0])
+list_trader.append([increment_sequence(),16.0,0.152,None,WAITING,0.0])
+list_trader.append([increment_sequence(),15.0,0.151,None,WAITING,0.0])
+list_trader.append([increment_sequence(),19.0,0.150,None,WAITING,0.0])
+list_trader.append([increment_sequence(),20.0,0.149,None,WAITING,0.0])
+list_trader.append([increment_sequence(),25.0,0.148,None,WAITING,0.0])
+list_trader.append([increment_sequence(),25.0,0.147,None,WAITING,0.0])
+list_trader.append([increment_sequence(),24.0,0.146,None,WAITING,0.0])
+list_trader.append([increment_sequence(),24.0,0.145,None,WAITING,0.0])
+list_trader.append([increment_sequence(),24.0,0.144,None,WAITING,0.0])
+list_trader.append([increment_sequence(),24.0,0.143,None,WAITING,0.0])
+list_trader.append([increment_sequence(),14.0,0.142,None,WAITING,0.0])
+list_trader.append([increment_sequence(),14.0,0.141,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.140,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.139,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.138,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.137,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.136,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.135,None,WAITING,0.0])
+list_trader.append([increment_sequence(),13.0,0.134,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.133,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.132,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.131,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.130,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.129,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.128,None,WAITING,0.0])
+list_trader.append([increment_sequence(),12.0,0.127,None,WAITING,0.0])
+list_trader.append([increment_sequence(),11.0,0.127,None,WAITING,0.0])
+list_trader.append([increment_sequence(),11.0,0.125,None,WAITING,0.0])
+list_trader.append([increment_sequence(),11.0,0.124,None,WAITING,0.0])
+list_trader.append([increment_sequence(),11.0,0.123,None,WAITING,0.0])
+list_trader.append([increment_sequence(),11.0,0.122,None,WAITING,0.0])
+list_trader.append([increment_sequence(),11.0,0.121,None,WAITING,0.0])
 
 
 
@@ -232,7 +254,8 @@ while(1==1):
             # Don't send notification and dont store  cancel order
             if(status!=CANCELED):
                 # Notify
-                notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
+                if(NOTIFY_ON_CLOSED_ORDERS==True):
+                    notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
                 # Persist closing order
                 persistenceHandler.storeClosedOrder(oe[0],opening_date,closing_date,price,volume,oe[1],status)
 
@@ -288,7 +311,7 @@ while(1==1):
                                 logger.info("Todays Benefits are "+str(todays_benefits))
                                 notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[0])+"€ (in "+str(todays_benefits[1])+" trades)")
                                 logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
-                                logger.info("---------------------Total for today-> "+str(todays_benefits[0])+"€ ("+str(todays_benefits[1])+"trades)")
+                                logger.info("---------------------Total for today-> "+str(todays_benefits[1])+"€ ("+str(todays_benefits[0])+"trades)")
                             except Exception as e:
                                 logger.info("fail to send Special notification for benefit. error was "+str(e))
                         break;
