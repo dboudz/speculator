@@ -182,8 +182,6 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_an
 list_trader=budgetCalculation(list_trader)
 
 
-exit(0)
-
 # Check that budget available on exchange is compliant 
 test_required_budget=list_trader[number_of_traders-1][5]
 test_available_budget=kraken.get_balance_EUR()
