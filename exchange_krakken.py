@@ -170,7 +170,7 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
 
 
    
-def private_call(function,parameters={}):
+def private_call(function,parameters):
     status=NOT_DONE
     cmpt=1
     result=None
@@ -186,7 +186,7 @@ def private_call(function,parameters={}):
         cmpt=cmpt+1
     return result
 
-def public_call(function,parameters={}):
+def public_call(function,parameters):
     status=NOT_DONE
     cmpt=1
     result=None
@@ -205,9 +205,9 @@ def public_call(function,parameters={}):
 def exchange_call(privacy,function,parameters={}):
     result=None
     if(privacy==PRIVACY_PRIVATE):
-        return private_call(function,parameters={})
+        return private_call(function,parameters)
     if(privacy==PRIVACY_PUBLIC):
-        return public_call(function,parameters={})
+        return public_call(function,parameters)
     return result
 
 
