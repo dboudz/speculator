@@ -15,7 +15,7 @@ import notifier
 # Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
 # Ajouter le controle de cohérence entre le portefeuille XRP 
 # GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
-# TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA !
+# TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
 # IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
 
@@ -314,7 +314,7 @@ while(1==1):
                                 benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
                                 todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
                                 logger.info("Todays Benefits are "+str(todays_benefits))
-                                notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[0])+"€ (in "+str(todays_benefits[1])+" trades)")
+                                notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[1])+"€ (in "+str(todays_benefits[0])+" trades)")
                                 logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
                                 logger.info("---------------------Total for today-> "+str(todays_benefits[1])+"€ ("+str(todays_benefits[0])+" trades)")
                             except Exception as e:
