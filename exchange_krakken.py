@@ -170,39 +170,44 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
 
 
    
+def private_call(function,parameters={}):
+    status=NOT_DONE
+    cmpt=1
+    result=None
+    while(status!=DONE):
+        try:
+            result=krakken_connection.query_private(function,parameters)
+            status=DONE
+        except Exception as e:
+            logger.info(function+' private faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
+            logger.info('Resetting exchange & retrying the request')
+            reset()
+            time.sleep(2)
+        cmpt=cmpt+1
+    return result
+
+def public_call(function,parameters={}):
+    status=NOT_DONE
+    cmpt=1
+    result=None
+    while(status!=DONE):
+        try:
+            result=krakken_connection.query_public(function,parameters)
+            status=DONE
+        except Exception as e:
+            logger.info(function+' public faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
+            logger.info('Resetting exchange & retrying the request')
+            reset()
+            time.sleep(2)
+        cmpt=cmpt+1
+    return result
+
 def exchange_call(privacy,function,parameters={}):
     result=None
     if(privacy==PRIVACY_PRIVATE):
-        try:
-            result=krakken_connection.query_private(function,parameters)
-        except Exception as e:
-            logger.info(function+' private faced an error. Resetting exchange & retrying the request')
-            logger.info(function+' Error was :'+str(e))
-            reset()
-            logger.info(function+' Second try for '+str(function))
-            try:
-                result=krakken_connection.query_private(function,parameters)
-            except Exception as e:
-                logger.info(function+' again,public faced an error. Resetting exchange & retrying the request')
-                logger.info(function+' Error was :'+str(e))
-                logger.info(function+' Exiting application')
-                exit(1)
+        return private_call(function,parameters={})
     if(privacy==PRIVACY_PUBLIC):
-        try:
-            result=krakken_connection.query_public(function,parameters)
-        except Exception as e:
-            logger.info(function+' public faced an error. Resetting exchange & retrying the request')
-            logger.info(function+' Error was :'+str(e))
-            reset()
-            logger.info(function+' Second try for '+str(function))
-            try:
-                result=krakken_connection.query_public(function,parameters)
-            except Exception as e:
-                logger.info(function+' again,public faced an error. Resetting exchange & retrying the request')
-                logger.info(function+' Error was :'+str(e))
-                logger.info(function+' Exiting application')
-                exit(1)
-            
+        return public_call(function,parameters={})
     return result
 
 
