@@ -87,6 +87,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
         req_result={}
         
         try:
+            time.sleep(1)
             req_result=krakken_connection.query_private('AddOrder',req_data)
             #{'error': [], 'result': {'descr': {'order': 'buy 30.00000000 XRPEUR @ limit 0.120000'}, 'txid': ['O55YD2-UXKMI-PPPXYP']}}
             validation=req_result.get('error')
@@ -134,6 +135,7 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
     new_selling_order=''
     
     try:
+        time.sleep(1)
         req_result=krakken_connection.query_private('AddOrder',req_data)
         validation=req_result.get('error')
         if(len(validation)>0):
@@ -176,6 +178,7 @@ def private_call(function,parameters):
     result=None
     while(status!=DONE):
         try:
+            time.sleep(1)
             result=krakken_connection.query_private(function,parameters)
         except Exception as e:
             logger.info(function+' private faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
@@ -193,6 +196,7 @@ def public_call(function,parameters):
     result=None
     while(status!=DONE):
         try:
+            time.sleep(1)
             result=krakken_connection.query_public(function,parameters)
             status=DONE
         except Exception as e:
