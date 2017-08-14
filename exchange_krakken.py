@@ -244,15 +244,16 @@ def get_open_orders():
     dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
     return (dict_open_orders.get('result').get('open'))
   
-def get_open_orders_selling_with_unit_sell_price():
+def get_open_orders_selling_with_unit_sell_price_and_volume():
     list_open_orders_with_unit_sell_price=[]
     open_orders=get_open_orders()
     for oe in list(open_orders.keys()):
         oe_currency=open_orders.get(oe).get('descr').get('pair')
         oe_order_type=open_orders.get(oe).get('descr').get('type')
         oe_unit_sell_price=float(open_orders.get(oe).get('descr').get('price'))
+        oe_volume=float(open_orders.get(oe).get('vol'))
         if(oe_currency=='XRPEUR' and oe_order_type=='sell'):
-            list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price))
+            list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price,oe_volume))
     return list_open_orders_with_unit_sell_price
 
 def get_closed_order_volume_by_id(id_order):
