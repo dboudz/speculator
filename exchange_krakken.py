@@ -177,12 +177,13 @@ def private_call(function,parameters):
     while(status!=DONE):
         try:
             result=krakken_connection.query_private(function,parameters)
-            status=DONE
         except Exception as e:
             logger.info(function+' private faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
             logger.info('Resetting exchange & retrying the request')
             reset()
             time.sleep(2)
+        if(result is not None):
+            status=DONE
         cmpt=cmpt+1
     return result
 
@@ -199,16 +200,16 @@ def public_call(function,parameters):
             logger.info('Resetting exchange & retrying the request')
             reset()
             time.sleep(2)
+        if(result is not None):
+            status=DONE
         cmpt=cmpt+1
     return result
 
 def exchange_call(privacy,function,parameters={}):
-    result=None
     if(privacy==PRIVACY_PRIVATE):
         return private_call(function,parameters)
     if(privacy==PRIVACY_PUBLIC):
         return public_call(function,parameters)
-    return result
 
 
 def init():
