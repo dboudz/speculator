@@ -40,39 +40,72 @@ DONE=0
 NOT_DONE=1
 
 
-def get_buying_order_with_same_pattern(volume,price):
-    # Before buying, check that there is no order with same characteristics
-    logger.info(" Getting eventual buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
+def get_buying_order_with_same_pattern_posterior_to(volume,price,timing):
+    # Searching order with same characteristics on open order /!\ created after timing
+    logger.info(" Getting eventual open buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
     open_orders=get_open_orders()
     time.sleep(5)
     oe_parameters=[]
     # Getting orders vol,price
     for oeid in open_orders.keys():
-        if(open_orders.get(oeid).get('descr').get('type')=='buy' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price'))):
+        if(open_orders.get(oeid).get('descr').get('type')=='buy' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price')) and (open_orders.get(oeid).get('opentm') > timing )):
             oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
     if(len(oe_parameters)>0):
-        logger.info(" Founded buying orders with same characteristics :"+str(oe_parameters))
+        logger.info(" Founded buying orders with same characteristics in open order list:"+str(oe_parameters))
     else:
-        logger.info(" No buying orders founded same characteristics :"+str(oe_parameters))
+        logger.info(" No buying orders founded same characteristics  in open order list:"+str(oe_parameters))
+ 
+    # Search on closed orders only if search on buying orders return nothing
+    if(len(oe_parameters)==0):
+        logger.info(" Getting eventual closed buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
+        close_orders=get_closed_orders()
+        time.sleep(5)
+        # Getting orders vol,price
+        for oeid in close_orders.keys():
+            if(close_orders.get(oeid).get('status')=='closed' and close_orders.get(oeid).get('descr').get('type')=='buy' and volume==float(close_orders.get(oeid).get('vol')) and price==float(close_orders.get(oeid).get('descr').get('price')) and (close_orders.get(oeid).get('opentm') > timing )):
+                oe_parameters.append((oeid,float(close_orders.get(oeid).get('vol')),float(close_orders.get(oeid).get('descr').get('price'))))
+        if(len(oe_parameters)>0):
+            logger.info(" Founded buying orders with same characteristics  in closed order list:"+str(oe_parameters))
+        else:
+            logger.info(" No buying orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
-def get_selling_order_with_same_pattern(volume,price):
-    # Before buying, check that there is no order with same characteristics
-    logger.info(" Getting eventual selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
+def get_selling_order_with_same_pattern_posterior_to(volume,price,timing):
+    # Searching order with same characteristics on open order /!\ created after timing
+    logger.info(" Getting eventual open selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
     open_orders=get_open_orders()
     time.sleep(5)
     oe_parameters=[]
     # Getting orders vol,price
     for oeid in open_orders.keys():
-        if(open_orders.get(oeid).get('descr').get('type')=='sell' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price'))):
+        if(open_orders.get(oeid).get('descr').get('type')=='sell' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price')) and (open_orders.get(oeid).get('opentm') > timing )):
             oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
     if(len(oe_parameters)>0):
-        logger.info(" Founded selling orders with same characteristics :"+str(oe_parameters))
+        logger.info(" Founded selling orders with same characteristics in open order list:"+str(oe_parameters))
     else:
-        logger.info(" No selling orders founded same characteristics :"+str(oe_parameters))
+        logger.info(" No selling orders founded same characteristics  in open order list:"+str(oe_parameters))
+ 
+    # Search on closed orders only if search on buying orders return nothing
+    if(len(oe_parameters)==0):
+        logger.info(" Getting eventual closed selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
+        close_orders=get_closed_orders()
+        time.sleep(5)
+        # Getting orders vol,price
+        for oeid in close_orders.keys():
+            if(close_orders.get(oeid).get('status')=='closed' and close_orders.get(oeid).get('descr').get('type')=='sell' and volume==float(close_orders.get(oeid).get('vol')) and price==float(close_orders.get(oeid).get('descr').get('price')) and (close_orders.get(oeid).get('opentm') > timing )):
+                oe_parameters.append((oeid,float(close_orders.get(oeid).get('vol')),float(close_orders.get(oeid).get('descr').get('price'))))
+        if(len(oe_parameters)>0):
+            logger.info(" Founded selling orders with same characteristics  in closed order list:"+str(oe_parameters))
+        else:
+            logger.info(" No selling orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
 def secure_buy(volume,price,currency='XXRPZEUR'):
+    status=NOT_DONE
+    # Get unix time
+    time_before_buy=get_server_unixtime()
+    logger.info("Secure buy stat at unix time "+str(time_before_buy))
+    
     # Check for existing open orders
     existing_open_orders=get_open_orders_ids_and_type()
     flag_existing_oe=False
@@ -81,6 +114,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
     for oe in existing_open_orders:
         if(oe[1]=='buy'):
             flag_existing_oe=True
+            
     # If no existing open ordres, create order and wait until confirmation
     if(flag_existing_oe==False):
         req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
@@ -107,16 +141,16 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
                  logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
                  reset()
                  cmpt=0
-                 while(cmpt<100):
+                 while(status==NOT_DONE):
                      logger.warn(" Try "+str(cmpt)+" for getting open order")
-                     oeid_char=get_buying_order_with_same_pattern(volume,price)
+                     oeid_char=get_buying_order_with_same_pattern_posterior_to(volume,price,time_before_buy)
                      if(len(oeid_char)>0):
                          if(len(oeid_char))>1:
                              logger.error("More than 1 buying order with same parameters : "+str(oeid_char))
                              notifier.notify("Fatal Error","More than 1 buying order with same parameters : "+str(oeid_char))
                              exit(1)
                          else:
-                             cmpt=10000
+                             status=DONE
                              new_buying_order=oeid_char[0][0]
                              logger.info("1 Open buying order with same characteristics found, it's our order created ! : "+str(oeid_char))
                      else:
@@ -142,7 +176,10 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
     
 
 def secure_sell(volume,price,currency='XXRPZEUR'):
-    
+    status=NOT_DONE
+    # Get unix time
+    time_before_sell=get_server_unixtime()
+    logger.info("Secure sell stat at unix time "+str(time_before_sell))
     req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
     req_result={}
     new_selling_order=''
@@ -166,16 +203,16 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
              logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
              reset()
              cmpt=0
-             while(cmpt<100):
+             while(status==NOT_DONE):
                  logger.warn(" Try "+str(cmpt)+" for getting open order")
-                 oeid_char=get_selling_order_with_same_pattern(volume,price)
+                 oeid_char=get_selling_order_with_same_pattern_posterior_to(volume,price,time_before_sell)
                  if(len(oeid_char)>0):
                      if(len(oeid_char))>1:
                          logger.error("More than 1 selling order with same parameters : "+str(oeid_char))
                          notifier.notify("Fatal Error","More than 1 selling order with same parameters : "+str(oeid_char))
                          exit(1)
                      else:
-                         cmpt=10000
+                         status=DONE
                          new_selling_order=oeid_char[0][0]
                          logger.info("1 Open selling order with same characteristics found, it's our order created ! : "+str(oeid_char))
                  else:
@@ -202,7 +239,7 @@ def private_call(function,parameters):
         try:
             time.sleep(1)
             result=krakken_connection.query_private(function,parameters)
-            logger.debug(str(result))
+            #logger.debug(str(result))
         except Exception as e:
             logger.info(function+' private faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
             logger.info('Resetting exchange & retrying the request')
@@ -222,7 +259,7 @@ def public_call(function,parameters):
         try:
             time.sleep(1)
             result=krakken_connection.query_public(function,parameters)
-            logger.debug(str(result))
+            #logger.debug(str(result))
             status=DONE
         except Exception as e:
             logger.info(function+' public faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
@@ -279,6 +316,7 @@ def get_open_orders_ids_and_type():
 def get_open_orders():
     dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
     return (dict_open_orders.get('result').get('open'))
+
   
 def get_open_orders_selling_with_unit_sell_price_and_volume():
     list_open_orders_with_unit_sell_price=[]

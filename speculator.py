@@ -82,12 +82,12 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-allowed_budget=650.0
+allowed_budget=617.0
 expected_gain_by_band=0.05
-number_of_traders=42
+number_of_traders=39
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
 step_between_unit_sell_and_unit_price=0.001
-minimum_buying_price=0.121
+minimum_buying_price=0.124
 # Available 69
        
 list_trader=[]
@@ -130,9 +130,6 @@ list_trader.append([increment_sequence(),12.0,0.127,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),11.0,0.127,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),11.0,0.125,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),11.0,0.124,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),11.0,0.123,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),11.0,0.122,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),11.0,0.121,None,WAITING,0.0,0.0])
 
 
 
@@ -204,6 +201,8 @@ logger.info("---------------------------------------------------")
 while(1==1):
     # Get current exchange time
     kraken_time=kraken.get_server_unixtime()
+    # Check if buying authorization is still active
+    AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
     
     #############################
     # STEP 0 Crawl and store data
