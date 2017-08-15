@@ -14,6 +14,7 @@ import notifier
 
 # Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
 # Ajouter le controle de cohérence entre le portefeuille XRP 
+# : sum (volume selling order) = volume xrp
 # GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
@@ -195,7 +196,6 @@ else:
 
 
 
-
 logger.info("---------------------------------------------------")
 logger.info("------- Let's Trade Baby------------------------ ;)")
 logger.info("------- Speculator AUTHORIZATION_OF_BUYING mode is :"+str(AUTHORIZATION_OF_BUYING)+" ")
@@ -291,6 +291,7 @@ while(1==1):
                             list_trader[index][5]=0.0
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                             # persist link between buying order & selling order
+                            logger.info("Persisting the link between buying order "+str(oe[0])+" and selling order "+str(created_selling_order))
                             persistenceHandler.storeTrade(oe[0],str(created_selling_order),allowed_budget)
                             break;
                     if(list_trader[index][3]==oe[0] and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):

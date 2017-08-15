@@ -87,6 +87,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
         req_result={}
         
         try:
+            logger.info("Lets go for the creation of buying order. Send request to the exchange.")
             time.sleep(1)
             req_result=krakken_connection.query_private('AddOrder',req_data)
             #{'error': [], 'result': {'descr': {'order': 'buy 30.00000000 XRPEUR @ limit 0.120000'}, 'txid': ['O55YD2-UXKMI-PPPXYP']}}
@@ -99,12 +100,14 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
                 new_buying_order=req_result.get('result').get('txid')[0]
                 logger.info("Buying Order creation success : "+str(new_buying_order))
         except Exception as e:
+            logger.info("Exception was caught when trying to create buying order.")
+            logger.info("104 Else, exception was "+str(e))
             if(str.strip(str(e)) =='The read operation timed out' or str.strip(str(e)) =='EService:Unavailable' ):
                  logger.warn(" Creation of buying order return error "+str(e))
                  logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
                  reset()
                  cmpt=0
-                 while(cmpt<10):
+                 while(cmpt<100):
                      logger.warn(" Try "+str(cmpt)+" for getting open order")
                      oeid_char=get_buying_order_with_same_pattern(volume,price)
                      if(len(oeid_char)>0):
@@ -120,10 +123,20 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
                          logger.warn(" sleep 3 second before next try")
                          time.sleep(3)
                          cmpt=cmpt+1
+            else:
+                logger.error("107 Unmanaged case. shutdown.")
+                notifier.notify("Fatal Error","Unmanaged case "+str(e)+" Exiting.")
+                exit(1)
     else:
         logger.error("Existing buying open orders already present, Exiting "+str(existing_open_orders))
         notifier.notify("Fatal Error","Existing buying open orders already present, Exiting "+str(existing_open_orders))
         exit(1)
+    
+    if(len(new_buying_order)<19):
+        logger.error("Buying open orders id feels wrong ("+new_buying_order+")  Exiting ")
+        notifier.notify("Fatal Error","Buying open orders id feels wrong ("+new_buying_order+")  Exiting ")
+        exit(1)
+        
     return new_buying_order
 
     
@@ -146,12 +159,14 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
             new_selling_order=req_result.get('result').get('txid')[0]
             logger.info("Selling Order creation success : "+str(new_selling_order))
     except Exception as e:
+        logger.info("Exception was caught when trying to create selling order.")
+        logger.info("105 Else, exception was "+str(e))
         if(str.strip(str(e)) =='The read operation timed out'  or str.strip(str(e)) =='EService:Unavailable'):
              logger.warn(" Creation of selling order return error "+str(e))
              logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
              reset()
              cmpt=0
-             while(cmpt<10):
+             while(cmpt<100):
                  logger.warn(" Try "+str(cmpt)+" for getting open order")
                  oeid_char=get_selling_order_with_same_pattern(volume,price)
                  if(len(oeid_char)>0):
@@ -167,7 +182,14 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
                      logger.warn(" sleep 3 second before next try")
                      time.sleep(3)
                      cmpt=cmpt+1
-
+        else:
+            logger.error("106 Unmanaged case. shutdown.")
+            notifier.notify("Fatal Error","Unmanaged case "+str(e)+" Exiting.")
+            exit(1)
+    if(len(new_selling_order)<19):
+        logger.error("Selling open orders id feels wrong ("+new_selling_order+")  Exiting ")
+        notifier.notify("Fatal Error","Buying open orders id feels wrong ("+new_selling_order+")  Exiting ")
+        exit(1)
     return new_selling_order
 
 
