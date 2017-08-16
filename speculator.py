@@ -20,6 +20,9 @@ import notifier
 # TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
 # IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
 
+# Chaque appel de open ou closed order devrait amener a un update de la table close
+# Creer des classes traders
+
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
 CRAWLED_CURRENCIES=os.environ['CRAWLED_CURRENCIES']
