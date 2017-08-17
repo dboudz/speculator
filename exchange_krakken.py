@@ -128,11 +128,13 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
             #{'error': [], 'result': {'descr': {'order': 'buy 30.00000000 XRPEUR @ limit 0.120000'}, 'txid': ['O55YD2-UXKMI-PPPXYP']}}
             validation=req_result.get('error')
             if(len(validation)>0):
-                logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
-                notifier.notify("Fatal Error","Buying Order creation failed. Exiting "+str(validation))
-                #TODO validation = 'EService:Unavailable'
-                
-                exit(1)
+                if(validation=='EService:Unavailable'):
+                    logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
+                    return secure_buy(volume,price,currency)
+                else:
+                    logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
+                    notifier.notify("Fatal Error","Buying Order creation failed. Exiting "+str(validation))
+                    exit(1)
             else:
                 new_buying_order=req_result.get('result').get('txid')[0]
                 logger.info("Buying Order creation success : "+str(new_buying_order))
@@ -193,9 +195,13 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
         req_result=krakken_connection.query_private('AddOrder',req_data)
         validation=req_result.get('error')
         if(len(validation)>0):
-            logger.error("Selling Order creation failed. Here is the req_result "+str(req_result))
-            notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
-            exit(1)
+            if(validation=='EService:Unavailable'):
+                logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
+                return secure_sell(volume,price,currency)
+            else:
+                logger.error("Selling Order creation failed. Here is the req_result "+str(req_result))
+                notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
+                exit(1)
         else:
             new_selling_order=req_result.get('result').get('txid')[0]
             logger.info("Selling Order creation success : "+str(new_selling_order))
