@@ -12,16 +12,17 @@ import logging
 import businessLogic
 import notifier
 
+# Creer des classes traders/order car la c'est de la pure MERDE
+# Unifier les differentes methodes qui appellent open and close orders. Il y en a plein ca sert à rien
 # Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
-# Ajouter le controle de cohérence entre le portefeuille XRP 
-# : sum (volume selling order) = volume xrp
 # GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
 # IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
 
 # Chaque appel de open ou closed order devrait amener a un update de la table close
-# Creer des classes traders
+
+
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -194,7 +195,19 @@ if(test_available_budget<test_required_budget):
 else:
     logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
 
-
+# Check if every XRP are to sold
+test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume()
+sold_volume=0.0
+for order in test_missing_selling_order:
+    sold_volume=sold_volume+order[2]
+available_xrp=kraken.get_balance_XRP()
+if((available_xrp+0.1)<sold_volume):
+    logger.error("XRP available on exchange ("+str(available_xrp)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+    notifier.notify('Fatal Error',"XRP available on exchange ("+str(available_xrp)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+    exit(1)
+else:
+    logger.info("XRP available on exchange ("+str(available_xrp)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
+   
 
 logger.info("---------------------------------------------------")
 logger.info("------- Let's Trade Baby------------------------ ;)")

@@ -129,14 +129,16 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
             validation=req_result.get('error')
             if(len(validation)>0):
                 logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
-                notifier.notify("Fatal Error","Buying Order creation failed. Exiting")
+                notifier.notify("Fatal Error","Buying Order creation failed. Exiting "+str(validation))
+                #TODO validation = 'EService:Unavailable'
+                
                 exit(1)
             else:
                 new_buying_order=req_result.get('result').get('txid')[0]
                 logger.info("Buying Order creation success : "+str(new_buying_order))
         except Exception as e:
             logger.info("Exception was caught when trying to create buying order.")
-            logger.info("104 Else, exception was "+str(e))
+            logger.info("104 Else, exception was "+str(e))                                
             if(str.strip(str(e)) =='The read operation timed out' or str.strip(str(e)) =='EService:Unavailable' ):
                  logger.warn(" Creation of buying order return error "+str(e))
                  logger.warn(" We will 1/ try rest kraken api, and  2/check 10 times to get the order id "+str(e))
@@ -302,7 +304,7 @@ def get_balance_for_currency(currency):
     values=exchange_call(PRIVACY_PRIVATE,'Balance')
     for cur in list(values.get('result').keys()):
         if(cur==currency):
-            return round(float(values.get('result').get(currency)),3)
+            return round(float(values.get('result').get(currency)),5)
         
 def get_open_orders_ids():
     return list(get_open_orders().keys())
