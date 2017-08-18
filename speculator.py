@@ -200,7 +200,7 @@ sold_volume=0.0
 for order in test_missing_selling_order:
     sold_volume=sold_volume+order[2]
 available_xrp=kraken.get_balance_XRP()
-if((available_xrp+0.1)<sold_volume):
+if(abs(available_xrp - (sold_volume+0.1))>1):
     logger.error("XRP available on exchange ("+str(available_xrp)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
     notifier.notify('Fatal Error',"XRP available on exchange ("+str(available_xrp)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
     exit(1)
