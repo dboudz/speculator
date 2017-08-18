@@ -85,7 +85,7 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-allowed_budget=617.0
+allowed_budget=655.0
 expected_gain_by_band=0.05
 number_of_traders=39
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
@@ -118,12 +118,12 @@ list_trader.append([increment_sequence(),14.0,0.142,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),14.0,0.141,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),13.0,0.140,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),13.0,0.139,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.138,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.137,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.136,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.135,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,0.138,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,0.137,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,0.136,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,0.135,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),13.0,0.134,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),12.0,0.133,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,0.133,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),12.0,0.132,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),12.0,0.131,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),12.0,0.130,None,WAITING,0.0,0.0])
