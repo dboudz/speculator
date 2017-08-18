@@ -17,7 +17,6 @@ import notifier
 # Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
 # GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
-# TODO Ajouter un controle pour vérfier que la position sur la monnaie tradée est ok avec les speculators
 # IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
 
 # Chaque appel de open ou closed order devrait amener a un update de la table close

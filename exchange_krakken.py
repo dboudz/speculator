@@ -104,7 +104,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
     status=NOT_DONE
     # Get unix time
     time_before_buy=get_server_unixtime()
-    time.sleep(60)
+    time.sleep(120)
     logger.info("Secure buy stat at unix time "+str(time_before_buy))
     
     # Check for existing open orders
@@ -185,7 +185,7 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
     # Get unix time
     time_before_sell=get_server_unixtime()
     logger.info("Secure sell stat at unix time "+str(time_before_sell))
-    time.sleep(60)
+    time.sleep(120)
     req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
     req_result={}
     new_selling_order=''
