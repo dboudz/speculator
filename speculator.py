@@ -85,12 +85,12 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-allowed_budget=655.0
+allowed_budget=1009.0
 expected_gain_by_band=0.05
-number_of_traders=39
+number_of_traders=53
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
 step_between_unit_sell_and_unit_price=0.001
-minimum_buying_price=0.124
+minimum_buying_price=0.110
 # Available 69
        
 list_trader=[]
@@ -115,25 +115,38 @@ list_trader.append([increment_sequence(),24.0,0.145,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),24.0,0.144,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),24.0,0.143,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),14.0,0.142,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),14.0,0.141,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.140,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.139,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,0.138,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,0.137,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,0.136,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,0.135,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),13.0,0.134,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),17.0,0.133,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),12.0,0.132,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),12.0,0.131,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),12.0,0.130,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,0.141,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,0.140,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,0.139,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),26.0,0.138,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),43.0,0.137,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),43.0,0.136,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),43.0,0.135,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),43.0,0.134,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),37.0,0.133,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),32.0,0.132,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),32.0,0.131,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,0.130,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),12.0,0.129,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),12.0,0.128,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),12.0,0.127,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),11.0,0.127,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),11.0,0.125,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),11.0,0.124,None,WAITING,0.0,0.0])
-
+list_trader.append([increment_sequence(),11.0,0.123,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.122,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.121,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.120,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.119,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.118,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.117,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.116,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.115,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.114,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.113,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.112,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.111,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),11.0,0.110,None,WAITING,0.0,0.0])
 
 
 # Check viability of configuration
