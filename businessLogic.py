@@ -74,7 +74,6 @@ def get_maximum_volume_to_buy_with_budget(budget,unit_price):
     #logger.info('Maximum buy volume is '+str(max_buy_volume))
     return max_buy_volume
 
-#project(42,0.001,0.08,0.163,1000)
 def project(nb_traders	,step_between_traders,minimal_trade_benefit,max_unit_buy_price,budget):
     # Check viability : check minimal budget for highest trader
     budget_to_test=budget
