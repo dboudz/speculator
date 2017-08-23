@@ -65,6 +65,22 @@ def increment_sequence():
     return sequence_number
 
 
+def safetyCheckOnTradingCurrencySellingOrder():
+    logger.info('On initizalization or after cancel order, check if there is no missing selling order')
+    test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
+    sold_volume=0.0
+    for order in test_missing_selling_order:
+        sold_volume=sold_volume+order[2]
+    available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
+    if(abs(available_traded_money - (sold_volume+0.1))>1):
+        logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+        notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+        exit(1)
+    else:
+        logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
+       
+
+
 def budgetCalculation(list_trader):
     logger.info("------Begin calculating the budget for each trader before buying----")
     available_budget=0
@@ -189,18 +205,8 @@ else:
     logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
 
 # Check if every unit of trading money are to sold
-test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
-sold_volume=0.0
-for order in test_missing_selling_order:
-    sold_volume=sold_volume+order[2]
-available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
-if(abs(available_traded_money - (sold_volume+0.1))>1):
-    logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-    notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-    exit(1)
-else:
-    logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
-   
+safetyCheckOnTradingCurrencySellingOrder()
+
 
 logger.info("---------------------------------------------------")
 logger.info("------- Let's Trade Baby------------------------ ;)")
@@ -449,6 +455,8 @@ while(1==1):
                             else:
                                 logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False')
                                 EXISTS_OPEN_BUYING_ORDERS=False
+                                safetyCheckOnTradingCurrencySellingOrder()
+                            
                     else:
                         logger.error("Technical Issue, trader tab is corrupted")
 
