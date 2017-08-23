@@ -19,7 +19,6 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 # Business Variables
-MINIMUM_XRP_VOLUME=30
 SELL_STEP=0.0001
 FEE_PERCENTAGE=0.16
 DONE=0
@@ -74,6 +73,8 @@ def get_maximum_volume_to_buy_with_budget(budget,unit_price):
     #logger.info('Maximum buy volume is '+str(max_buy_volume))
     return max_buy_volume
 
+
+#project(25,0.28,0.05,42,1000)
 def project(nb_traders	,step_between_traders,minimal_trade_benefit,max_unit_buy_price,budget):
     # Check viability : check minimal budget for highest trader
     budget_to_test=budget
@@ -123,6 +124,11 @@ def project(nb_traders	,step_between_traders,minimal_trade_benefit,max_unit_buy_
 
 def can_I_setup_like_this_to_respect_objective_and_step(initial_unit_price,step_sell,budget_all_inclusive,expected_gain):
     maximum_volume_with_budget=get_maximum_volume_to_buy_with_budget(budget_all_inclusive,initial_unit_price)
+    
+    if(maximum_volume_with_budget==0):
+        #logger.info('No (integer number of) currency can be bought with this budget')
+        return False
+
     minimum_unit_sell_price=calculate_minimum_sell_price_to(maximum_volume_with_budget,initial_unit_price,expected_gain)
     
     if(minimum_unit_sell_price>(initial_unit_price+step_sell)):

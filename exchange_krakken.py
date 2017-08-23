@@ -16,7 +16,6 @@ import notifier
 # Init var
 
 SERVER_NAME=os.environ['SERVER_NAME']
-
 # Init parameters
 api_key=os.environ['API_KEY']
 api_sign=os.environ['API_SIGN']
@@ -100,7 +99,7 @@ def get_selling_order_with_same_pattern_posterior_to(volume,price,timing):
             logger.info(" No selling orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
-def secure_buy(volume,price,currency='XXRPZEUR'):
+def secure_buy(volume,price,currency_crawling_name):
     status=NOT_DONE
     # Get unix time
     time_before_buy=get_server_unixtime()
@@ -118,7 +117,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
             
     # If no existing open ordres, create order and wait until confirmation
     if(flag_existing_oe==False):
-        req_data = {'pair': currency,'type':'buy','ordertype':'limit','price':price,'volume':volume}
+        req_data = {'pair': currency_crawling_name,'type':'buy','ordertype':'limit','price':price,'volume':volume}
         req_result={}
         
         try:
@@ -130,7 +129,7 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
             if(len(validation)>0):
                 if(validation=="['EService:Unavailable']"):
                     logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
-                    return secure_buy(volume,price,currency)
+                    return secure_buy(volume,price,currency_crawling_name)
                 else:
                     logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
                     notifier.notify("Fatal Error","Buying Order creation failed. Exiting "+str(validation))
@@ -180,13 +179,13 @@ def secure_buy(volume,price,currency='XXRPZEUR'):
 
     
 
-def secure_sell(volume,price,currency='XXRPZEUR'):
+def secure_sell(volume,price,currency_crawling_name):
     status=NOT_DONE
     # Get unix time
     time_before_sell=get_server_unixtime()
     logger.info("Secure sell stat at unix time "+str(time_before_sell))
     time.sleep(120)
-    req_data = {'pair': currency,'type':'sell','ordertype':'limit','price':price,'volume':volume}
+    req_data = {'pair': currency_crawling_name,'type':'sell','ordertype':'limit','price':price,'volume':volume}
     req_result={}
     new_selling_order=''
     
@@ -197,7 +196,7 @@ def secure_sell(volume,price,currency='XXRPZEUR'):
         if(len(validation)>0):
             if(validation=="['EService:Unavailable']"):
                 logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
-                return secure_sell(volume,price,currency)
+                return secure_sell(volume,price,currency_crawling_name)
             else:
                 logger.error("Selling Order creation failed. Here is the req_result "+str(req_result))
                 notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
@@ -300,8 +299,8 @@ def reset():
     init()
     time.sleep(5)
 
-def get_balance_XRP():
-    return get_balance_for_currency('XXRP')
+def get_balance_for_traded_currency(currency_balance_name):
+    return get_balance_for_currency(currency_balance_name)
 
 def get_balance_EUR():
     return get_balance_for_currency('ZEUR')
@@ -328,7 +327,7 @@ def get_open_orders():
     return (dict_open_orders.get('result').get('open'))
 
   
-def get_open_orders_selling_with_unit_sell_price_and_volume():
+def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name):
     list_open_orders_with_unit_sell_price=[]
     open_orders=get_open_orders()
     for oe in list(open_orders.keys()):
@@ -336,7 +335,7 @@ def get_open_orders_selling_with_unit_sell_price_and_volume():
         oe_order_type=open_orders.get(oe).get('descr').get('type')
         oe_unit_sell_price=float(open_orders.get(oe).get('descr').get('price'))
         oe_volume=float(open_orders.get(oe).get('vol'))
-        if(oe_currency=='XRPEUR' and oe_order_type=='sell'):
+        if(oe_currency==currency_order_name and oe_order_type=='sell'):
             list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price,oe_volume))
     return list_open_orders_with_unit_sell_price
 
@@ -394,7 +393,7 @@ def get_server_unixtime():
     return unix_time_integer
 
 
-def get_currency_value(currency_separated_by_commas='XXRPZEUR'):
-    req_data = {'pair': currency_separated_by_commas}
+def get_currency_value(currency_crawling_name):
+    req_data = {'pair': currency_crawling_name}
     cur=exchange_call(PRIVACY_PUBLIC,'Ticker',req_data)
     return cur

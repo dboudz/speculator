@@ -18,14 +18,19 @@ import notifier
 # GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
-
 # Chaque appel de open ou closed order devrait amener a un update de la table close
 
 
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
-CRAWLED_CURRENCIES=os.environ['CRAWLED_CURRENCIES']
+# XRP -> XXRPZEUR       LTC -> XLTCZEUR
+CURRENCY_CRAWLED_NAME=os.environ['CURRENCY_CRAWLED_NAME']
+# XRP -> XRPEUR         LTC -> LTCEUR
+CURRENCY_ORDER_NAME=os.environ['CURRENCY_ORDER_NAME']
+# XRP -> XXRP           LTC -> XLTC
+CURRENCY_BALANCE_NAME=os.environ['CURRENCY_BALANCE_NAME']
+
 NOTIFY_ON_CLOSED_ORDERS=bool(os.environ['NOTIFY_ON_CLOSED_ORDERS']=='True')
 
 # Logging Management
@@ -49,7 +54,6 @@ NOT_DONE=1
 WAITING='wait'
 SELLING='sell'
 BUYING='buy'
-TRADING_CURRENCY='XXRPZEUR'
 CLOSED='closed'
 CANCELED='canceled'
 
@@ -174,7 +178,7 @@ for order_with_type in list_open_orders_with_ids:
 list_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
 
 # Map current orders with traders.
-for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_and_volume():
+for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME):
     is_order_mapped=False
     # Map selling order only if it fits with a trader
     for index in range(0,number_of_traders):
@@ -209,18 +213,18 @@ if(test_available_budget<test_required_budget):
 else:
     logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
 
-# Check if every XRP are to sold
-test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume()
+# Check if every unit of trading money are to sold
+test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
 sold_volume=0.0
 for order in test_missing_selling_order:
     sold_volume=sold_volume+order[2]
-available_xrp=kraken.get_balance_XRP()
-if(abs(available_xrp - (sold_volume+0.1))>1):
-    logger.error("XRP available on exchange ("+str(available_xrp)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-    notifier.notify('Fatal Error',"XRP available on exchange ("+str(available_xrp)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
+if(abs(available_traded_money - (sold_volume+0.1))>1):
+    logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+    notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
     exit(1)
 else:
-    logger.info("XRP available on exchange ("+str(available_xrp)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
+    logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
    
 
 logger.info("---------------------------------------------------")
@@ -237,13 +241,13 @@ while(1==1):
     #############################
     # STEP 0 Crawl and store data
     #############################
-    crawled_currencies=kraken.get_currency_value(CRAWLED_CURRENCIES)
-    currency_actual_ask_price=float(crawled_currencies.get('result').get(TRADING_CURRENCY).get('a')[0])
+    crawled_currencies=kraken.get_currency_value(CURRENCY_CRAWLED_NAME)
+    currency_actual_ask_price=float(crawled_currencies.get('result').get(CURRENCY_CRAWLED_NAME).get('a')[0])
     if(crawled_currencies != None):
         for currency in crawled_currencies.get('result').keys():
             c=crawled_currencies.get('result').get(currency)
             persistenceHandler.storeCurrency(kraken_time,currency,c.get('a'),c.get('b'),c.get('c'),c.get('v'),c.get('p'),c.get('t'),c.get('l'),c.get('h'),c.get('o'))
-    logger.info("Crawled values "+str(currency_actual_ask_price)+" for currency "+str(CRAWLED_CURRENCIES))
+    logger.info("Crawled values "+str(currency_actual_ask_price)+" for currency "+str(CURRENCY_CRAWLED_NAME))
     time.sleep(15)
     
     ##################################################################
@@ -313,7 +317,7 @@ while(1==1):
                             unit_selling_price=list_trader[index][2]+step_between_unit_sell_and_unit_price
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:
-                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price)
+                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME)
                             fresh_open_orders_ids_list.append([str(created_selling_order),SELLING])
                             list_trader[index][3]=str(created_selling_order)
                             list_trader[index][4]=SELLING
@@ -374,11 +378,11 @@ while(1==1):
         # Get trading informations only if no other speculators are buying
         IS_TREND_GROWING=False
         if(EXISTS_OPEN_BUYING_ORDERS==False):
-            df2=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,2)
-            df5=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,5)
-            df10=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,10)
+            df2=persistenceHandler.get_Trends_time_series(kraken_time,CURRENCY_CRAWLED_NAME,2)
+            df5=persistenceHandler.get_Trends_time_series(kraken_time,CURRENCY_CRAWLED_NAME,5)
+            df10=persistenceHandler.get_Trends_time_series(kraken_time,CURRENCY_CRAWLED_NAME,10)
             # I take 16 mins to be sure having at least 14.5 mins
-            df15=persistenceHandler.get_Trends_time_series(kraken_time,TRADING_CURRENCY,16)
+            df15=persistenceHandler.get_Trends_time_series(kraken_time,CURRENCY_CRAWLED_NAME,16)
             
             trends2_is_growing=businessLogic.it_market_increasing(df2)
             trends5_is_growing=businessLogic.it_market_increasing(df5)
@@ -431,7 +435,7 @@ while(1==1):
                             logger.info("          For further analysis, unix time is "+str(kraken_time))
                         
                             # create buying order
-                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME)
                             logger.info("Buying order "+str(created_buying_order)+" was created")
                             list_open_orders_with_ids.append([created_buying_order,BUYING])
                             # /!\set up right status and cut budget setup selling order 
@@ -454,7 +458,6 @@ while(1==1):
                     buying_trader=list_trader[BUYING_TRADER_ID]
                     upper_buying_trader=list_trader[BUYING_TRADER_ID-1]
                     if(buying_trader[0]==BUYING_TRADER_ID and upper_buying_trader[0]==BUYING_TRADER_ID-1):
-                        # TODO Technical security : get open order details  and check them
                         # Control is : market price has to be - upper or  equals to buyer unit price
                         if(buying_trader[2]<= currency_actual_ask_price  and currency_actual_ask_price<upper_buying_trader[2] ):
                             logger.info('Order is still rightly placed : (buyer price  '+str(buying_trader[2])+') <= (market price '+str(currency_actual_ask_price)+') < ( upper buyer price '+str(upper_buying_trader[2])+')')
