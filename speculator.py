@@ -13,17 +13,15 @@ import businessLogic
 import notifier
 
 
-##### Gérer les cancel order partiellement traités :
-# ex  {'refid': None, 'userref': None, 'status': 'canceled', 'reason': 'User canceled', 'opentm': 1503510682.8232, 'closetm': 1503512452.6468, 'starttm': 0, 'expiretm': 0, 'descr': {'pair': 'LTCEUR', 'type': 'buy', 'ordertype': 'limit', 'price': '40.54000', 'price2': '0', 'leverage': 'none', 'order': 'buy 1.00000000 LTCEUR @ limit 40.54000'}, 'vol': '1.00000000', 'vol_exec': '0.20599999', 'cost': '8.35124', 'fee': '0.01336', 'price': '40.54000', 'misc': 'partial', 'oflags': 'fciq'}
-
-# Creer des classes traders/order car la c'est de la pure MERDE
-# Unifier les differentes methodes qui appellent open and close orders. Il y en a plein ca sert à rien
-# Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
-# GERER LE CAS OU UN ORDRE EST CLOS QUAND LE SPECULATOR EST DOWN.
+# TODO Creer des classes traders/order car la c'est de la pure MERDE
+# TODO Unifier les differentes methodes qui appellent open and close orders. Il y en a plein ca sert à rien
+# TODO Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
-# IMPROVEMENT caculer les bénéfices pour les remettre dans le panier de trade
-# Chaque appel de open ou closed order devrait amener a un update de la table close
+# TODO Chaque appel de open ou closed order devrait amener a un update de la table close
 
+
+##### TESTING Gérer les cancel order partiellement traités :
+# ex  {'refid': None, 'userref': None, 'status': 'canceled', 'reason': 'User canceled', 'opentm': 1503510682.8232, 'closetm': 1503512452.6468, 'starttm': 0, 'expiretm': 0, 'descr': {'pair': 'LTCEUR', 'type': 'buy', 'ordertype': 'limit', 'price': '40.54000', 'price2': '0', 'leverage': 'none', 'order': 'buy 1.00000000 LTCEUR @ limit 40.54000'}, 'vol': '1.00000000', 'vol_exec': '0.20599999', 'cost': '8.35124', 'fee': '0.01336', 'price': '40.54000', 'misc': 'partial', 'oflags': 'fciq'}
 
 
 # Var initialization
@@ -51,8 +49,6 @@ list_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
 DONE=0
 NOT_DONE=1
 
-
-
 ####################11
 # Initialize traders
 WAITING='wait'
@@ -60,7 +56,6 @@ SELLING='sell'
 BUYING='buy'
 CLOSED='closed'
 CANCELED='canceled'
-
 
 sequence_number=-1
 def increment_sequence():
@@ -298,27 +293,38 @@ while(1==1):
             volume=float(coe.get('vol'))
             status=str(coe.get('status'))
             descr=str(coe.get('descr'))
+            order_type=str(coe.get('descr').get('type'))
+            executed_volume=float(coe.get('vol_exec'))
+            is_buying_order_canceled_and_partially_executed=False
+            # Creating flag for buying order canceled but partially executed
+            if(order_type==BUYING and status==CANCELED and executed_volume>0):
+                is_buying_order_canceled_and_partially_executed=True
+                
             opening_date=str(coe.get('opentm'))
             closing_date=str(coe.get('closetm'))
 
             # Don't send notification and dont store  cancel order
-            if(status!=CANCELED):
+            if(status!=CANCELED or is_buying_order_canceled_and_partially_executed==True):
                 # Notify
                 if(NOTIFY_ON_CLOSED_ORDERS==True):
-                    notifier.notify('Order '+oe[0]+' '+str.upper(status),descr)
+                    specific_text=""
+                    if(is_buying_order_canceled_and_partially_executed==False):
+                        specific_text="PARTIALLY EXECUTED CANCEL "
+                    notifier.notify(specific_text+'Order '+oe[0]+' '+str.upper(status),descr)
                 # Persist closing order
                 persistenceHandler.storeClosedOrder(oe[0],opening_date,closing_date,price,volume,oe[1],status)
 
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
             
-            # If an BUY order was CLOSED( not CANCELED), search the concerned speculator to create sell order
-
+            # If an BUY order was CLOSED( or CANCELED but partially processed), search the concerned speculator to create sell order
             if(oe[1]==BUYING or oe[1]==SELLING):
                 logger.info("order "+str(oe[0])+" just closed, searching trader")
                 for index in range(0,number_of_traders):
-                    if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0] and status==CLOSED ):
+                    if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0] and (status==CLOSED or is_buying_order_canceled_and_partially_executed==True) ):
                         logger.info("1/ "+str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                        if(is_buying_order_canceled_and_partially_executed==True):
+                            logger.info("- Specific case of selling order creation after cancelation of partially executed buying order")
                         ########################
                         # CREATING SELLING ORDER
                         ########################
@@ -370,7 +376,8 @@ while(1==1):
     # Finally setup open order to freshest list
     list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
-    
+    # Safety check
+    safetyCheckOnTradingCurrencySellingOrder()
     
     if(DO_STEP2==True):
         ##########################
@@ -486,7 +493,6 @@ while(1==1):
                             else:
                                 logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False')
                                 EXISTS_OPEN_BUYING_ORDERS=False
-                                safetyCheckOnTradingCurrencySellingOrder()
                             
                     else:
                         logger.error("Technical Issue, trader tab is corrupted")

@@ -343,9 +343,8 @@ def get_closed_order_volume_by_id(id_order):
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
     for oe in list(dict_closed_orders.get('result').get('closed')):
         if(oe==id_order):
-            return float(dict_closed_orders.get('result').get('closed').get(oe).get('vol'))
+            return float(dict_closed_orders.get('result').get('closed').get(oe).get('vol_exec'))
     return 0.0
-
 
 def get_closed_orders():
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
