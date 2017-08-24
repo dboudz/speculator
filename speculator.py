@@ -12,6 +12,10 @@ import logging
 import businessLogic
 import notifier
 
+
+##### Gérer les cancel order partiellement traités :
+# ex  {'refid': None, 'userref': None, 'status': 'canceled', 'reason': 'User canceled', 'opentm': 1503510682.8232, 'closetm': 1503512452.6468, 'starttm': 0, 'expiretm': 0, 'descr': {'pair': 'LTCEUR', 'type': 'buy', 'ordertype': 'limit', 'price': '40.54000', 'price2': '0', 'leverage': 'none', 'order': 'buy 1.00000000 LTCEUR @ limit 40.54000'}, 'vol': '1.00000000', 'vol_exec': '0.20599999', 'cost': '8.35124', 'fee': '0.01336', 'price': '40.54000', 'misc': 'partial', 'oflags': 'fciq'}
+
 # Creer des classes traders/order car la c'est de la pure MERDE
 # Unifier les differentes methodes qui appellent open and close orders. Il y en a plein ca sert à rien
 # Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
@@ -105,46 +109,73 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-allowed_budget=1029.0
-expected_gain_by_band=0.05
-number_of_traders=26
+allowed_budget=1017.0
+expected_gain_by_band=0.067
+number_of_traders=48
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
 step_between_unit_sell_and_unit_price=0.28
-minimum_buying_price=35.22
-# project(26,0.28,0.05,42.5,1035)
+minimum_buying_price=32.56
+# project(48,0.28,0.067,46,1035)
        
 list_trader=[]
-list_trader.append([increment_sequence(),43.0,42.22,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),43.0,41.94,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),43.0,41.66,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),42.0,41.38,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),42.0,41.10,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),47.0,45.72,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),46.0,45.44,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,45.16,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,44.88,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,44.60,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),42.0,40.82,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),41.0,40.54,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),41.0,40.26,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),41.0,39.98,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),41.0,39.70,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,44.32,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,44.04,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),23.0,43.76,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,43.48,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,43.20,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),40.0,39.42,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),40.0,39.14,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),40.0,38.86,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),39.0,38.58,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),39.0,38.30,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,42.92,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,42.64,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,42.36,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,42.08,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,41.80,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),39.0,38.02,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),39.0,37.74,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),38.0,37.46,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),38.0,37.18,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),38.0,36.90,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,41.52,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,41.24,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,40.96,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,40.68,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,40.40,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),37.0,36.62,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),37.0,36.34,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),37.0,36.06,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),37.0,35.78,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),36.0,35.50,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,40.12,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,39.84,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,39.56,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,39.28,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,39.00,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),36.0,35.22,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,38.72,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,38.44,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,38.16,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),20.0,37.88,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,37.60,None,WAITING,0.0,0.0])
+
+list_trader.append([increment_sequence(),19.0,37.32,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,37.04,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,36.76,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,36.48,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,36.20,None,WAITING,0.0,0.0])
+
+list_trader.append([increment_sequence(),19.0,35.92,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,35.64,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,35.36,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,35.08,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,34.80,None,WAITING,0.0,0.0])
+
+list_trader.append([increment_sequence(),18.0,34.52,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,34.24,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,33.96,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,33.68,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,33.40,None,WAITING,0.0,0.0])
+
+list_trader.append([increment_sequence(),17.0,33.12,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,32.84,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,32.56,None,WAITING,0.0,0.0])
+
 
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
