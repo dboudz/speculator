@@ -308,7 +308,7 @@ while(1==1):
                 # Notify
                 if(NOTIFY_ON_CLOSED_ORDERS==True):
                     specific_text=""
-                    if(is_buying_order_canceled_and_partially_executed==False):
+                    if(is_buying_order_canceled_and_partially_executed==True):
                         specific_text="PARTIALLY EXECUTED CANCEL "
                     notifier.notify(specific_text+'Order '+oe[0]+' '+str.upper(status),descr)
                 # Persist closing order
