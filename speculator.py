@@ -75,9 +75,10 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
         
         # Particular case : If there is a buying order partailly processed, amount can be slightly different:
         sum_buying_partial=0.0
-        for item in open_orders:
-            if (item[2]>0.0):
-                sum_buying_partial=sum_buying_partial+item[2]
+        if(open_orders != None ):
+            for item in open_orders:
+                if (item[2]>0.0):
+                    sum_buying_partial=sum_buying_partial+item[2]
         if(sum_buying_partial>0):
             logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
         else:
