@@ -107,7 +107,7 @@ def secure_buy(volume,price,currency_crawling_name):
     logger.info("Secure buy stat at unix time "+str(time_before_buy))
     
     # Check for existing open orders
-    existing_open_orders=get_open_orders_ids_and_type()
+    existing_open_orders=get_open_orders_ids_and_type_and_flag_partially_executed()
     flag_existing_oe=False
     new_buying_order=''
     
