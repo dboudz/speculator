@@ -71,7 +71,7 @@ def safetyCheckOnTradingCurrencySellingOrder():
     for order in test_missing_selling_order:
         sold_volume=sold_volume+order[2]
     available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
-    if(abs(available_traded_money - (sold_volume+0.1))>1):
+    if(abs(available_traded_money - (sold_volume+0.1))>0.5):
         logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
         notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
         exit(1)
