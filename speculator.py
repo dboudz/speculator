@@ -45,7 +45,7 @@ logger.setLevel(logging.DEBUG)
 
 
 kraken.init()
-list_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
+list_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
 DONE=0
 NOT_DONE=1
 
@@ -64,7 +64,7 @@ def increment_sequence():
     return sequence_number
 
 
-def safetyCheckOnTradingCurrencySellingOrder():
+def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
     logger.info('On initizalization or after cancel order, check if there is no missing selling order')
     test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
     sold_volume=0.0
@@ -72,13 +72,20 @@ def safetyCheckOnTradingCurrencySellingOrder():
         sold_volume=sold_volume+order[2]
     available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
     if(abs(available_traded_money - (sold_volume+0.1))>0.5):
-        logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-        notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+        
+        # Particular case : If there is a buying order partailly processed, amount can be slightly different:
+        sum_buying_partial=0.0
+        for item in open_orders:
+            if (item[2]>0.0):
+                sum_buying_partial=sum_buying_partial+item[2]
+        if(sum_buying_partial>0):
+            logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
+        else:
+            logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+            notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
         exit(1)
     else:
         logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
-       
-
 
 def budgetCalculation(list_trader):
     logger.info("------Begin calculating the budget for each trader before buying----")
@@ -192,7 +199,7 @@ for order_with_type in list_open_orders_with_ids:
             notifier.notify('Fatal Error',"Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
             exit(1)
 ## Reinitializing buying list:
-list_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
+list_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
 
 # Map current orders with traders.
 for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME):
@@ -261,7 +268,7 @@ while(1==1):
     # STEP 1 Check for closed Orders and perform corresponding actions
     ##################################################################
     # Getting fresh version of the list and compare
-    fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type()
+    fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
     fresh_oe_id_list=[]
     fresh_oe_buyint_id_list=[]
     for elem in fresh_open_orders_ids_list:
@@ -377,7 +384,7 @@ while(1==1):
     list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
     # Safety check
-    safetyCheckOnTradingCurrencySellingOrder()
+    safetyCheckOnTradingCurrencySellingOrder(fresh_open_orders_ids_list)
     
     if(DO_STEP2==True):
         ##########################
