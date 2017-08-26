@@ -128,11 +128,9 @@ def get_todays_benefits():
 def get_benefit_by_day(day):
     try:
         sql_get_benefice_by_day="""
-        select price,volume,current 
-        sod.order_type ='sell' and date_trunc('day',sod.closing_date)='"""+day+"""'
-        and tr.selling_order_id=sod.order_id
-        and tr.buying_order_id=bod.order_id
-        and bod.volume=sod.volume;
+        select price,volume,current_step_between_buy_and_sell 
+        from closed_orders where
+        order_type ='sell' and date_trunc('day',closing_date)='"""+day+"""'
         """
         df_benefice_by_day=pandas.read_sql(sql_get_benefice_by_day,conn)
         return df_benefice_by_day

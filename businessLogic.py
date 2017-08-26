@@ -56,7 +56,7 @@ def calculate_today_benefits(df_benefice_by_day):
     if df_benefice_by_day is not None :
         total_benefits=0
         for trade in df_benefice_by_day.itertuples():
-            total_benefits=total_benefits+estimate_benefits(trade.unit_buy_price,trade.volume,trade.unit_sell_price)
+            total_benefits=total_benefits+estimate_benefits(trade.price - trade.current_step_between_buy_and_sell,trade.volume,trade.price)
         return (len(df_benefice_by_day),round(total_benefits,3))
     else:
         return (0,0.0)

@@ -365,8 +365,7 @@ while(1==1):
                         if(flag_benefit):
                             try:
                                 benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
-                                #todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
-                                todays_benefits="bouchon"
+                                todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
                                 logger.info("Todays Benefits are "+str(todays_benefits))
                                 notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[1])+"€ (in "+str(todays_benefits[0])+" trades)")
                                 logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
