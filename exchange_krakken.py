@@ -360,7 +360,7 @@ def get_closed_orders(persistenceHandler,current_step_between_buy_and_sell):
         executed_volume=float(dict_closed_orders.get('result').get('closed').get(coe).get('vol_exec'))
         order_type=dict_closed_orders.get('result').get('closed').get(coe).get('descr').get('type')
         # Persist only selling order with a volume executed
-        if(executed_volume>0.0):
+        if(executed_volume>0.0 and order_type=='sell'):
             persistenceHandler.storeClosedOrder(coe,opening_date,closing_date,price,executed_volume,order_type,current_step_between_buy_and_sell)
     
     return (dict_closed_orders.get('result').get('closed'))

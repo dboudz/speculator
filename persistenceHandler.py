@@ -181,7 +181,7 @@ def storeTrade(buying_order_id,selling_order_id,budget):
 
 def storeClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,current_step_between_buy_and_sell):
     try:
-        sql_insert=""" INSERT INTO closed_orders(order_id,opening_date,closing_date,price,volume,order_type,is_a_cancelation_order,current_step_between_buy_and_sell) values
+        sql_insert=""" INSERT INTO closed_orders(order_id,opening_date,closing_date,price,volume,order_type,current_step_between_buy_and_sell) values
         (
         '"""+str(order_id)+"""',
         to_timestamp("""+str(opening_date)+"""),
@@ -189,9 +189,10 @@ def storeClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,
         """+str(price)+""",
         """+str(volume)+""",
         '"""+str(order_type)+"""',
-        """+str(current_step_between_buy_and_sell)+""",
+        """+str(current_step_between_buy_and_sell)+"""
         ) ON CONFLICT DO NOTHING
         """
+        
         conn.execute(sql_insert)
     except Exception as e:
         logger.error("Failing persisting closed order. This was the error "+str(e))
