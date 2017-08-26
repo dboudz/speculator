@@ -119,15 +119,6 @@ def initDB():
     """
     conn.execute(sql_create_closed_orders_index)
     
-    logger.debug("create if not exist table trade")
-    sql_create_trade_table="""
-    create table if not exists trade(
-        buying_order_id character varying,
-        selling_order_id character varying,
-        budget float
-    );"""
-    conn.execute(sql_create_trade_table)
-
  
     
 def get_todays_benefits():
@@ -137,8 +128,7 @@ def get_todays_benefits():
 def get_benefit_by_day(day):
     try:
         sql_get_benefice_by_day="""
-        select bod.order_id as buying_order_id,bod.volume as volume,bod.price as unit_buy_price,sod.order_id as selling_order_id,sod.price as unit_sell_price from closed_orders sod , trade tr, closed_orders bod
-        where 
+        select price,volume,current 
         sod.order_type ='sell' and date_trunc('day',sod.closing_date)='"""+day+"""'
         and tr.selling_order_id=sod.order_id
         and tr.buying_order_id=bod.order_id
@@ -149,23 +139,6 @@ def get_benefit_by_day(day):
     except Exception as e:
         logger.error("Failing get_benefit_by_day . This was the error "+str(e))
         return None
-    
-    
-    
-def storeTrade(buying_order_id,selling_order_id,budget):
-    try:
-        sql_insert=""" INSERT INTO trade(buying_order_id,selling_order_id,budget) values
-        (
-        '"""+str(buying_order_id)+"""',
-        '"""+str(selling_order_id)+"""',
-        """+str(budget)+"""
-        );
-        """
-        conn.execute(sql_insert)
-    except Exception as e:
-        logger.error("Failing persisting storeTrade . This was the error "+str(e))
-        return 1
-    return 0
     
     #df = pd.read_sql_query("select * from lol2 limit 5;", conn)
     

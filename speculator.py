@@ -345,9 +345,6 @@ while(1==1):
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
-                            # persist link between buying order & selling order
-                            logger.info("Persisting the link between buying order "+str(oe[0])+" and selling order "+str(created_selling_order))
-                            persistenceHandler.storeTrade(oe[0],str(created_selling_order),allowed_budget)
                             break;
                     if(list_trader[index][3]==oe[0] and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
                         logger.info("2/ "+str(list_trader[index][4])+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
@@ -368,7 +365,8 @@ while(1==1):
                         if(flag_benefit):
                             try:
                                 benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
-                                todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
+                                #todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
+                                todays_benefits="bouchon"
                                 logger.info("Todays Benefits are "+str(todays_benefits))
                                 notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[1])+"€ (in "+str(todays_benefits[0])+" trades)")
                                 logger.info("CONGRATULATIONS !!! Benefits are little bit under "+str(benefits)+"€")
@@ -380,10 +378,13 @@ while(1==1):
     # Finally setup open order to freshest list
     list_open_orders_with_ids=fresh_open_orders_ids_list
     time.sleep(15)
-    # Safety check
-    safetyCheckOnTradingCurrencySellingOrder(fresh_open_orders_ids_list)
+
     
     if(DO_STEP2==True):
+        
+        # Safety check
+        safetyCheckOnTradingCurrencySellingOrder(fresh_open_orders_ids_list)
+        
         ##########################
         # Traders
         ##########################
