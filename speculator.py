@@ -323,7 +323,7 @@ while(1==1):
                 persistenceHandler.storeClosedOrder(oe[0],opening_date,closing_date,price,volume,oe[1],status)
 
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
-            list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type()
+            list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
             
             # If an BUY order was CLOSED( or CANCELED but partially processed), search the concerned speculator to create sell order
             if(oe[1]==BUYING or oe[1]==SELLING):
