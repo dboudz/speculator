@@ -133,7 +133,7 @@ list_trader.append([increment_sequence(),27.0,43.20,None,WAITING,0.0,0.0])
 
 list_trader.append([increment_sequence(),27.0,42.92,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),27.0,42.64,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,42.36,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,42.36,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),22.0,42.08,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),22.0,41.80,None,WAITING,0.0,0.0])
 
