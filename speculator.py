@@ -81,7 +81,7 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
             logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
         else:
             logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-            notifier.notify('Fatal Error',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
         exit(1)
     else:
         logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
@@ -413,8 +413,7 @@ while(1==1):
             trends15_is_growing=businessLogic.it_market_increasing(df15)
             
             delay_covered=(max(df15.index) - min(df15.index)).seconds
-            logger.info('Covered delay = '+str(delay_covered/60) +" mins")
-            logger.info('Trend data:  (Trend2:'+str(len(df2))+' elems),(Trend5:'+str(len(df5))+' elems),(Trend10:'+str(len(df10))+' elems),(Trend15='+str(len(df15))+' elems)')
+            logger.info('Covered delay = '+str(round( (delay_covered/60) ,5))+' mins / Trend data:  (T2:'+str(len(df2))+' elems),(T5:'+str(len(df5))+' elems),(T10:'+str(len(df10))+' elems),(T15='+str(len(df15))+' elems)')
             
             # Checking if trend is reliable
             if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15 and (delay_covered/60.0)>=14.5):
@@ -446,8 +445,6 @@ while(1==1):
                         # SET BUYING ORDER
                         ##################
                         SELECTED_TRADER_ID_FOR_BUYING=index+1
-                        # Checking if we are under budget
-
                         # Checking it trader is available:
                         if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
                             # Calculate volume to buy
