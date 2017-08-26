@@ -320,8 +320,8 @@ def get_open_orders_ids_and_type_and_flag_partially_executed():
     dict_open_orders=get_open_orders()
     for orderId in list(dict_open_orders.keys()):
         executed_buying_volume=0.0
-        if(dict_open_orders.get(orderId).get('descr').get('type')=='buy'  and float(dict_open_orders.get(orderId).get('descr').get('vol_exec')) >0.0):
-            executed_buying_volume=float(dict_open_orders.get(orderId).get('descr').get('vol_exec'))
+        if(dict_open_orders.get(orderId).get('descr').get('type')=='buy'  and float(dict_open_orders.get(orderId).get('vol_exec')) >0.0):
+            executed_buying_volume=float(dict_open_orders.get(orderId).get('vol_exec'))
         list_open_orders.append( [orderId,dict_open_orders.get(orderId).get('descr').get('type'),executed_buying_volume ])
     return list_open_orders
 
