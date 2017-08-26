@@ -19,10 +19,8 @@ import notifier
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # TODO Chaque appel de open ou closed order devrait amener a un update de la table close
 
-
 ##### TESTING Gérer les cancel order partiellement traités :
 # ex  {'refid': None, 'userref': None, 'status': 'canceled', 'reason': 'User canceled', 'opentm': 1503510682.8232, 'closetm': 1503512452.6468, 'starttm': 0, 'expiretm': 0, 'descr': {'pair': 'LTCEUR', 'type': 'buy', 'ordertype': 'limit', 'price': '40.54000', 'price2': '0', 'leverage': 'none', 'order': 'buy 1.00000000 LTCEUR @ limit 40.54000'}, 'vol': '1.00000000', 'vol_exec': '0.20599999', 'cost': '8.35124', 'fee': '0.01336', 'price': '40.54000', 'misc': 'partial', 'oflags': 'fciq'}
-
 
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
@@ -112,7 +110,7 @@ def budgetCalculation(list_trader):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-allowed_budget=1017.0
+allowed_budget=1047.0
 expected_gain_by_band=0.067
 number_of_traders=48
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
@@ -128,13 +126,13 @@ list_trader.append([increment_sequence(),23.0,44.88,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),23.0,44.60,None,WAITING,0.0,0.0])
 
 list_trader.append([increment_sequence(),23.0,44.32,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,44.04,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,43.76,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,43.48,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,43.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),28.0,44.04,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,43.76,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,43.48,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,43.20,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),22.0,42.92,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,42.64,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,42.92,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,42.64,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),22.0,42.36,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),22.0,42.08,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),22.0,41.80,None,WAITING,0.0,0.0])
@@ -295,7 +293,7 @@ while(1==1):
             logger.info('Order '+oe[0]+' is not in fresh open order list')
             DO_STEP2=False
             # Get details about closed orders for notification
-            closed_orders=kraken.get_closed_orders()
+            closed_orders=kraken.get_closed_orders(persistenceHandler,step_between_unit_sell_and_unit_price)
             coe=closed_orders.get(oe[0])
             price=float(coe.get('price'))
             volume=float(coe.get('vol'))
@@ -319,8 +317,6 @@ while(1==1):
                     if(is_buying_order_canceled_and_partially_executed==True):
                         specific_text="PARTIALLY EXECUTED CANCEL "
                     notifier.notify(specific_text+'Order '+oe[0]+' '+str.upper(status),descr)
-                # Persist closing order
-                persistenceHandler.storeClosedOrder(oe[0],opening_date,closing_date,price,volume,oe[1],status)
 
             logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
             list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
@@ -337,13 +333,13 @@ while(1==1):
                         # CREATING SELLING ORDER
                         ########################
                         # Get available amount of currency
-                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe[0])
+                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe[0],persistenceHandler,step_between_unit_sell_and_unit_price)
                         logger.info("Volume to sell is :"+str(volume_buyed_to_sell))
                         if(volume_buyed_to_sell>0.0):
                             unit_selling_price=list_trader[index][2]+step_between_unit_sell_and_unit_price
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:
-                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME)
+                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price)
                             fresh_open_orders_ids_list.append([str(created_selling_order),SELLING])
                             list_trader[index][3]=str(created_selling_order)
                             list_trader[index][4]=SELLING
@@ -462,7 +458,7 @@ while(1==1):
                             logger.info("          For further analysis, unix time is "+str(kraken_time))
                         
                             # create buying order
-                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME)
+                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price)
                             logger.info("Buying order "+str(created_buying_order)+" was created")
                             list_open_orders_with_ids.append([created_buying_order,BUYING])
                             # /!\set up right status and cut budget setup selling order 
@@ -501,7 +497,6 @@ while(1==1):
                             else:
                                 logger.info('Setting EXISTS_OPEN_BUYING_ORDERS to False')
                                 EXISTS_OPEN_BUYING_ORDERS=False
-                            
                     else:
                         logger.error("Technical Issue, trader tab is corrupted")
 

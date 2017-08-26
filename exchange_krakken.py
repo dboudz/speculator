@@ -10,7 +10,7 @@ import time
 import sys,os
 import krakenex
 import logging
-import notifier
+import notifier 
 
 
 # Init var
@@ -39,7 +39,7 @@ DONE=0
 NOT_DONE=1
 
 
-def get_buying_order_with_same_pattern_posterior_to(volume,price,timing):
+def get_buying_order_with_same_pattern_posterior_to(volume,price,timing,persistenceHandler,current_step_between_buy_and_sell):
     # Searching order with same characteristics on open order /!\ created after timing
     logger.info(" Getting eventual open buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
     open_orders=get_open_orders()
@@ -57,7 +57,7 @@ def get_buying_order_with_same_pattern_posterior_to(volume,price,timing):
     # Search on closed orders only if search on buying orders return nothing
     if(len(oe_parameters)==0):
         logger.info(" Getting eventual closed buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
-        close_orders=get_closed_orders()
+        close_orders=get_closed_orders(persistenceHandler,current_step_between_buy_and_sell)
         time.sleep(5)
         # Getting orders vol,price
         for oeid in close_orders.keys():
@@ -69,7 +69,7 @@ def get_buying_order_with_same_pattern_posterior_to(volume,price,timing):
             logger.info(" No buying orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
-def get_selling_order_with_same_pattern_posterior_to(volume,price,timing):
+def get_selling_order_with_same_pattern_posterior_to(volume,price,timing,persistenceHandler,current_step_between_buy_and_sell):
     # Searching order with same characteristics on open order /!\ created after timing
     logger.info(" Getting eventual open selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
     open_orders=get_open_orders()
@@ -87,7 +87,7 @@ def get_selling_order_with_same_pattern_posterior_to(volume,price,timing):
     # Search on closed orders only if search on buying orders return nothing
     if(len(oe_parameters)==0):
         logger.info(" Getting eventual closed selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
-        close_orders=get_closed_orders()
+        close_orders=get_closed_orders(persistenceHandler,current_step_between_buy_and_sell)
         time.sleep(5)
         # Getting orders vol,price
         for oeid in close_orders.keys():
@@ -99,7 +99,7 @@ def get_selling_order_with_same_pattern_posterior_to(volume,price,timing):
             logger.info(" No selling orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
-def secure_buy(volume,price,currency_crawling_name):
+def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell):
     status=NOT_DONE
     # Get unix time
     time_before_buy=get_server_unixtime()
@@ -147,7 +147,7 @@ def secure_buy(volume,price,currency_crawling_name):
                  cmpt=0
                  while(status==NOT_DONE):
                      logger.warn(" Try "+str(cmpt)+" for getting open order")
-                     oeid_char=get_buying_order_with_same_pattern_posterior_to(volume,price,time_before_buy)
+                     oeid_char=get_buying_order_with_same_pattern_posterior_to(volume,price,time_before_buy,persistenceHandler,current_step_between_buy_and_sell)
                      if(len(oeid_char)>0):
                          if(len(oeid_char))>1:
                              logger.error("More than 1 buying order with same parameters : "+str(oeid_char))
@@ -179,7 +179,7 @@ def secure_buy(volume,price,currency_crawling_name):
 
     
 
-def secure_sell(volume,price,currency_crawling_name):
+def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell):
     status=NOT_DONE
     # Get unix time
     time_before_sell=get_server_unixtime()
@@ -214,7 +214,7 @@ def secure_sell(volume,price,currency_crawling_name):
              cmpt=0
              while(status==NOT_DONE):
                  logger.warn(" Try "+str(cmpt)+" for getting open order")
-                 oeid_char=get_selling_order_with_same_pattern_posterior_to(volume,price,time_before_sell)
+                 oeid_char=get_selling_order_with_same_pattern_posterior_to(volume,price,time_before_sell,persistenceHandler,current_step_between_buy_and_sell)
                  if(len(oeid_char)>0):
                      if(len(oeid_char))>1:
                          logger.error("More than 1 selling order with same parameters : "+str(oeid_char))
@@ -328,7 +328,6 @@ def get_open_orders_ids_and_type_and_flag_partially_executed():
 def get_open_orders():
     dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
     return (dict_open_orders.get('result').get('open'))
-
   
 def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name):
     list_open_orders_with_unit_sell_price=[]
@@ -342,15 +341,28 @@ def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name)
             list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price,oe_volume))
     return list_open_orders_with_unit_sell_price
 
-def get_closed_order_volume_by_id(id_order):
-    dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
+def get_closed_order_volume_by_id(id_order,persistenceHandler,current_step_between_buy_and_sell):
+    dict_closed_orders=get_closed_orders(persistenceHandler,current_step_between_buy_and_sell)
     for oe in list(dict_closed_orders.get('result').get('closed')):
         if(oe==id_order):
             return float(dict_closed_orders.get('result').get('closed').get(oe).get('vol_exec'))
     return 0.0
 
-def get_closed_orders():
+def get_closed_orders(persistenceHandler,current_step_between_buy_and_sell):
     dict_closed_orders=exchange_call(PRIVACY_PRIVATE,'ClosedOrders')
+    
+    # Persist closed selling order
+    for coe in list(dict_closed_orders.get('result').get('closed')):
+        # StoreClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,,current_step_between_buy_and_sell)
+        opening_date=dict_closed_orders.get('result').get('closed').get(coe).get('opentm')
+        closing_date=dict_closed_orders.get('result').get('closed').get(coe).get('closetm')
+        price=float(dict_closed_orders.get('result').get('closed').get(coe).get('price'))
+        executed_volume=float(dict_closed_orders.get('result').get('closed').get(coe).get('vol_exec'))
+        order_type=dict_closed_orders.get('result').get('closed').get(coe).get('descr').get('type')
+        # Persist only selling order with a volume executed
+        if(executed_volume>0.0):
+            persistenceHandler.storeClosedOrder(coe,opening_date,closing_date,price,executed_volume,order_type,current_step_between_buy_and_sell)
+    
     return (dict_closed_orders.get('result').get('closed'))
 
 def secure_cancel_order(order_id):

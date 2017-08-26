@@ -109,9 +109,15 @@ def initDB():
         price float,
         volume float,
         order_type character varying,
-		is_a_cancelation_order character varying
+        current_step_between_buy_and_sell float
     );"""
     conn.execute(sql_create_closed_orders_table)
+    
+    logger.debug('create index on closed order if not exists')
+    sql_create_closed_orders_index="""
+    CREATE  UNIQUE  INDEX IF NOT EXISTS  unique_order_id ON  closed_orders(order_id)
+    """
+    conn.execute(sql_create_closed_orders_index)
     
     logger.debug("create if not exist table trade")
     sql_create_trade_table="""
@@ -173,9 +179,9 @@ def storeTrade(buying_order_id,selling_order_id,budget):
 #    h = high array(<today>, <last 24 hours>),
 #    o = today's opening price
 
-def storeClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,is_a_cancelation_order):
+def storeClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,current_step_between_buy_and_sell):
     try:
-        sql_insert=""" INSERT INTO closed_orders(order_id,opening_date,closing_date,price,volume,order_type,is_a_cancelation_order) values
+        sql_insert=""" INSERT INTO closed_orders(order_id,opening_date,closing_date,price,volume,order_type,is_a_cancelation_order,current_step_between_buy_and_sell) values
         (
         '"""+str(order_id)+"""',
         to_timestamp("""+str(opening_date)+"""),
@@ -183,8 +189,8 @@ def storeClosedOrder(order_id,opening_date,closing_date,price,volume,order_type,
         """+str(price)+""",
         """+str(volume)+""",
         '"""+str(order_type)+"""',
-        '"""+str(is_a_cancelation_order)+"""'
-        )
+        """+str(current_step_between_buy_and_sell)+""",
+        ) ON CONFLICT DO NOTHING
         """
         conn.execute(sql_insert)
     except Exception as e:
