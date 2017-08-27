@@ -83,7 +83,7 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
         else:
             logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
             notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-        exit(1)
+            exit(1)
     else:
         logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
 
