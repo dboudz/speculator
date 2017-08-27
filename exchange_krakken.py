@@ -240,7 +240,7 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
 
 
    
-def private_call(function,parameters):
+def private_call(function,parameters,logs=False):
     status=NOT_DONE
     cmpt=1
     result=None
@@ -256,11 +256,12 @@ def private_call(function,parameters):
             time.sleep(2)
         if(result is not None):
             status=DONE
-            logger.info('Succes on request '+str(function))
+            if(logs==True):
+                logger.info('Succes on request '+str(function))
         cmpt=cmpt+1
     return result
 
-def public_call(function,parameters):
+def public_call(function,parameters,logs=False):
     status=NOT_DONE
     cmpt=1
     result=None
@@ -277,7 +278,8 @@ def public_call(function,parameters):
             time.sleep(2)
         if(result is not None):
             status=DONE
-            logger.info('Succes on request '+str(function))
+            if(logs==True):
+                logger.info('Succes on request '+str(function))
         cmpt=cmpt+1
     return result
 

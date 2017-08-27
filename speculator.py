@@ -86,7 +86,7 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
     else:
         logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
 
-def budgetCalculation(list_trader):
+def budgetCalculation(list_trader,logs=False):
     logger.info("------Begin calculating the budget for each trader before buying----")
     available_budget=0
     for index in range(0,number_of_traders):
@@ -96,17 +96,18 @@ def budgetCalculation(list_trader):
             list_trader[index][5]=available_budget
         else:
             list_trader[index][5]=0.0
-            logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-            logger.debug('Budget for above traders is going to be removed !')
+            #logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
+            #logger.debug('Budget for above traders is going to be removed !')
             for index_above_trader in range(index,-1,-1):
                 list_trader[index_above_trader][5]=0.0
                 #logger.debug('Trader '+str(index_above_trader)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
                 available_budget=0
     # Display budget
-    logger.info("------Display of Final budget ----")
-    for index in range(0,number_of_traders):
-        logger.info('Trader '+str(index)+', buyer at '+str(list_trader[index][2])+' is in '+str.upper(list_trader[index][4])+' mode with a budget of '+str(list_trader[index][5])+" engaged money is "+str(list_trader[index][6]))
-    logger.info("------End of Budget Calculation----")
+    if (logs==True):
+        logger.info("------Display of Final budget ----")
+        for index in range(0,number_of_traders):
+            logger.info('Trader '+str(index)+', buyer at '+str(list_trader[index][2])+' is in '+str.upper(list_trader[index][4])+' mode with a budget of '+str(list_trader[index][5])+" engaged money is "+str(list_trader[index][6]))
+        logger.info("------End of Budget Calculation----")
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
