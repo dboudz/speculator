@@ -69,7 +69,7 @@ def estimate_benefits(unit_buy_price,volume,unit_sell_price):
 
 def get_maximum_volume_to_buy_with_budget(budget,unit_price):
     budget_minus_fee=budget - calculate_fee(budget)
-    max_buy_volume=0.5 *math.floor(budget_minus_fee/unit_price * 2.0)
+    max_buy_volume=0.1 *math.floor(budget_minus_fee/unit_price * 10.0)
     #logger.info('Maximum buy volume is '+str(max_buy_volume))
     return max_buy_volume
 

@@ -72,6 +72,7 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
     if(abs(available_traded_money - (sold_volume+0.1))>=0.5):
         
         # Particular case : If there is a buying order partailly processed, amount can be slightly different:
+        logger.info("88 Checking for partial orders ")
         sum_buying_partial=0.0
         if(open_orders != None ):
             for item in open_orders:
@@ -414,7 +415,7 @@ while(1==1):
             trends15_is_growing=businessLogic.it_market_increasing(df15)
             
             delay_covered=(max(df15.index) - min(df15.index)).seconds
-            logger.info('Covered delay = '+str(round( (delay_covered/60) ,5))+' mins / Trend data:  (T2:'+str(len(df2))+' elems),(T5:'+str(len(df5))+' elems),(T10:'+str(len(df10))+' elems),(T15='+str(len(df15))+' elems)')
+            logger.info('Covered delay = '+str(round( (delay_covered/60) ,2))+' mins / Trend data:  (T2:'+str(len(df2))+' elems),(T5:'+str(len(df5))+' elems),(T10:'+str(len(df10))+' elems),(T15='+str(len(df15))+' elems)')
             
             # Checking if trend is reliable
             if(len(df2)>2 and len(df5)>5 and len(df10)>10 and len(df15)>15 and (delay_covered/60.0)>=14.5):
