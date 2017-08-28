@@ -345,9 +345,9 @@ def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name)
 
 def get_closed_order_volume_by_id(id_order,persistenceHandler,current_step_between_buy_and_sell):
     dict_closed_orders=get_closed_orders(persistenceHandler,current_step_between_buy_and_sell)
-    for oe in list(dict_closed_orders.get('result').get('closed')):
+    for oe in list(dict_closed_orders.keys()):
         if(oe==id_order):
-            return float(dict_closed_orders.get('result').get('closed').get(oe).get('vol_exec'))
+            return float(dict_closed_orders.get(oe).get('vol_exec'))
     return 0.0
 
 def get_closed_orders(persistenceHandler,current_step_between_buy_and_sell):
