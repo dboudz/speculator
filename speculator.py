@@ -114,7 +114,7 @@ def budgetCalculation(list_trader,logs=False):
             if(list_trader[index][6]>0 and list_trader[index][6]<available_budget):
                 logger.info(" * Engaged Budget is "+str(list_trader[index][6])+" and available budget is "+str(available_budget))
                 logger.info(" * available budget will be increased of  "+str(available_budget-list_trader[index][6]))
-                available_budget=available_budget+available_budget-list_trader[index][6]
+                available_budget=available_budget-list_trader[index][6]
             else:
                 logger.info(" Budget will be 0")
                 available_budget=0
