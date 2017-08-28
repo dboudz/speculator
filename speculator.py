@@ -19,16 +19,13 @@ import notifier
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # TODO Chaque appel de open ou closed order devrait amener a un update de la table close
 
-##### TESTING Gérer les cancel order partiellement traités :
-# ex  {'refid': None, 'userref': None, 'status': 'canceled', 'reason': 'User canceled', 'opentm': 1503510682.8232, 'closetm': 1503512452.6468, 'starttm': 0, 'expiretm': 0, 'descr': {'pair': 'LTCEUR', 'type': 'buy', 'ordertype': 'limit', 'price': '40.54000', 'price2': '0', 'leverage': 'none', 'order': 'buy 1.00000000 LTCEUR @ limit 40.54000'}, 'vol': '1.00000000', 'vol_exec': '0.20599999', 'cost': '8.35124', 'fee': '0.01336', 'price': '40.54000', 'misc': 'partial', 'oflags': 'fciq'}
-
 # Var initialization
 AUTHORIZATION_OF_BUYING=bool(os.environ['AUTHORIZATION_OF_BUYING']=='True')
-# XRP -> XXRPZEUR       LTC -> XLTCZEUR
+# XRP -> XXRPZEUR       LTC -> XLTCZEUR   ETC -> XETCZEUR
 CURRENCY_CRAWLED_NAME=os.environ['CURRENCY_CRAWLED_NAME']
-# XRP -> XRPEUR         LTC -> LTCEUR
+# XRP -> XRPEUR         LTC -> LTCEUR     ETC -> ETCEUR
 CURRENCY_ORDER_NAME=os.environ['CURRENCY_ORDER_NAME']
-# XRP -> XXRP           LTC -> XLTC
+# XRP -> XXRP           LTC -> XLTC       ETC -> XETC
 CURRENCY_BALANCE_NAME=os.environ['CURRENCY_BALANCE_NAME']
 
 NOTIFY_ON_CLOSED_ORDERS=bool(os.environ['NOTIFY_ON_CLOSED_ORDERS']=='True')
@@ -112,73 +109,69 @@ def budgetCalculation(list_trader,logs=False):
     return list_trader
 
 # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-allowed_budget=1049.0
-expected_gain_by_band=0.067
-number_of_traders=49
+allowed_budget=1051.0
+expected_gain_by_band=0.08
+number_of_traders=50
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
-step_between_unit_sell_and_unit_price=0.28
-minimum_buying_price=33.40
+step_between_unit_sell_and_unit_price=0.1
+minimum_buying_price=11.0
 # project(48,0.28,0.067,46,1035)
        
 list_trader=[]
-list_trader.append([increment_sequence(),29.0,46.84,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),28.0,46.56,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),28.0,46.28,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),28.0,46.00,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),28.0,15.9,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),28.0,15.8,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,15.7,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,15.6,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,15.5,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.4,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.3,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.2,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.1,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.0,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),28.0,45.72,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,45.44,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,45.16,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,44.88,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,44.60,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,14.9,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.8,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.7,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.6,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.5,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.4,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.3,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.2,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.1,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.0,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),24.0,44.32,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,44.04,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,43.76,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,43.48,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,43.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,13.9,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.8,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.7,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.6,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.5,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.4,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.3,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,13.2,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,13.1,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,13.0,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,12.9,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),23.0,42.92,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),23.0,42.64,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,42.36,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,42.08,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,41.80,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,12.8,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,12.7,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.6,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.5,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.4,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.3,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.2,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.1,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,12.0,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,11.9,None,WAITING,0.0,0.0])
 
-list_trader.append([increment_sequence(),21.0,41.52,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,41.24,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,40.96,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,40.68,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,40.40,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),21.0,40.12,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,39.84,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),20.0,39.56,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),20.0,39.28,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),20.0,39.00,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),20.0,38.72,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),20.0,38.44,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),20.0,38.16,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),20.0,37.88,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,37.60,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),19.0,37.32,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,37.04,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,36.76,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,36.48,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,36.20,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),19.0,35.92,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,35.64,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,35.36,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,35.08,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,34.80,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),18.0,34.52,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,34.24,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,33.96,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,33.68,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),17.0,33.40,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.8,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.7,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.6,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.5,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.4,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.3,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.2,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.1,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.0,None,WAITING,0.0,0.0])
 
 
 # Check viability of configuration
