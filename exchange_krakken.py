@@ -127,7 +127,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
             #{'error': [], 'result': {'descr': {'order': 'buy 30.00000000 XRPEUR @ limit 0.120000'}, 'txid': ['O55YD2-UXKMI-PPPXYP']}}
             validation=req_result.get('error')
             if(len(validation)>0):
-                if(validation=="['EService:Unavailable']"):
+                if(str(validation)=="['EService:Unavailable']"):
                     logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
                     return secure_buy(volume,price,currency_crawling_name)
                 else:
@@ -194,7 +194,7 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
         req_result=krakken_connection.query_private('AddOrder',req_data)
         validation=req_result.get('error')
         if(len(validation)>0):
-            if(validation=="['EService:Unavailable']"):
+            if(str(validation)=="['EService:Unavailable']"):
                 logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
                 return secure_sell(volume,price,currency_crawling_name)
             else:
