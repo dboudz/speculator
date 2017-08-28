@@ -11,6 +11,7 @@ import persistenceHandler
 import logging
 import businessLogic
 import notifier
+import math
 
 
 # TODO Creer des classes traders/order car la c'est de la pure MERDE
@@ -91,11 +92,11 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
 def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_unit_price):
     buy_trade=volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2)
     fees=businessLogic.calculate_fee(volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2))
-    engaged_money=round(buy_trade + fees,2)
+    engaged_money=math.ceil(buy_trade + fees)
     logger.info("Volume buyed was "+str(volume) +" at "+str(round(unit_sell_price-step_between_unit_sell_and_unit_price,2) ))
     logger.info("             fees were "+str(fees) )
-    logger.info("             so engaged money was "+str(round(buy_trade + fees,2)) )
-    return engaged_money
+    logger.info("             so (ceiled) engaged money was "+str(float(round(buy_trade + fees,2))) )
+    return float(engaged_money)
 
 
 def budgetCalculation(list_trader,logs=False):
@@ -108,12 +109,21 @@ def budgetCalculation(list_trader,logs=False):
             list_trader[index][5]=available_budget
         else:
             list_trader[index][5]=0.0
-            #logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-            #logger.debug('Budget for above traders is going to be removed !')
+
+            # Engaged money
+            if(list_trader[index][6]>0 and list_trader[index][6]<available_budget):
+                logger.info(" * Engaged Budget is "+str(list_trader[index][6])+" and available budget is "+str(available_budget))
+                logger.info(" * available budget will be increased of  "+str(available_budget-list_trader[index][6]))
+                #available_budget=available_budget+available_budget-list_trader[index][6]
+           #else:
+           #     available_budget=0
+            
+            logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
+            logger.debug('Budget for above traders is going to be removed !')
             for index_above_trader in range(index,-1,-1):
                 list_trader[index_above_trader][5]=0.0
-                #logger.debug('Trader '+str(index_above_trader)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
-                available_budget=0
+            #logger.debug('Trader '+str(index_above_trader)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
+            available_budget=0
     # Display budget
     if (logs==True):
         logger.info("------Display of Final budget ----")
