@@ -91,7 +91,11 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
 def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_unit_price):
     buy_trade=volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2)
     fees=businessLogic.calculate_fee(volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2))
-    return round(buy_trade + fees,2)
+    engaged_money=round(buy_trade + fees,2)
+    logger.info("Volume buyed was "+str(volume) +" at "+str(round(unit_sell_price-step_between_unit_sell_and_unit_price,2) ))
+    logger.info("             fees were "+str(fees) )
+    logger.info("             so engaged money was "+str(round(buy_trade + fees,2)) )
+    return engaged_money
 
 
 def budgetCalculation(list_trader,logs=False):
