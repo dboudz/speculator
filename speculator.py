@@ -74,7 +74,9 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
         if(open_orders != None ):
             for item in open_orders:
                 if (item[2]>0.0):
+                    logger.info("89 Adding "+str(item[2])+" from "+str(item[0]))
                     sum_buying_partial=sum_buying_partial+item[2]
+        logger.info("90 Sum partial order  "+str(sum_buying_partial))
         if(sum_buying_partial>0):
             logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
         else:
@@ -113,66 +115,65 @@ allowed_budget=1051.0
 expected_gain_by_band=0.08
 number_of_traders=50
 # NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
-step_between_unit_sell_and_unit_price=0.1
+step_between_unit_sell_and_unit_price=0.10
 minimum_buying_price=11.0
 # project(48,0.28,0.067,46,1035)
        
 list_trader=[]
-list_trader.append([increment_sequence(),28.0,15.9,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),28.0,15.8,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),27.0,15.7,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),27.0,15.6,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),27.0,15.5,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.4,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.3,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.2,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.1,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.0,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),25.0,14.9,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.8,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.7,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.6,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.5,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.4,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.3,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.2,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.1,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.0,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),22.0,13.9,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.8,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.7,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.6,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.5,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.4,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.3,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,13.2,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,13.1,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,13.0,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,12.9,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),25.0,12.8,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,12.7,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.6,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.5,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.4,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.3,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.2,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.1,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),17.0,12.0,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),17.0,11.9,None,WAITING,0.0,0.0])
-
-list_trader.append([increment_sequence(),16.0,11.8,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,11.7,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,11.6,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,11.5,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.4,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.3,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.2,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.1,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.0,None,WAITING,0.0,0.0])
-
+list_trader.append([increment_sequence(),28.0,15.90,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),28.0,15.80,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,15.70,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,15.60,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),27.0,15.50,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.40,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.30,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.10,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,15.00,None,WAITING,0.0,0.0])
+                                                  
+list_trader.append([increment_sequence(),25.0,14.90,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.80,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.70,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.60,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),24.0,14.50,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.40,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.30,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.10,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,14.00,None,WAITING,0.0,0.0])
+                                                  
+list_trader.append([increment_sequence(),22.0,13.90,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.80,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.70,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.60,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.50,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.40,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),21.0,13.30,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,13.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,13.10,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),19.0,13.00,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),25.0,12.90,None,WAITING,0.0,0.0])
+                                                  
+list_trader.append([increment_sequence(),25.0,12.80,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),22.0,12.70,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.60,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.50,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.40,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.30,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),18.0,12.10,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,12.00,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),17.0,11.90,None,WAITING,0.0,0.0])
+                                                  
+list_trader.append([increment_sequence(),16.0,11.80,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.70,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.60,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),16.0,11.50,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.40,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.30,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.20,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.10,None,WAITING,0.0,0.0])
+list_trader.append([increment_sequence(),15.0,11.00,None,WAITING,0.0,0.0])
 
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
@@ -202,9 +203,10 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_an
     # Map selling order only if it fits with a trader
     for index in range(0,number_of_traders):
         # checking if selling price in between buy and sell price
-        if(open_selling_order[1]>list_trader[index][2] and open_selling_order[1]<=list_trader[index][2]+step_between_unit_sell_and_unit_price):
+        print(str(open_selling_order[1]) +">"+str(list_trader[index][2])+" "+str(open_selling_order[1])+"<="+str(round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)))
+        if(open_selling_order[1]>list_trader[index][2] and open_selling_order[1]<=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)):
             logger.info('Mapping order '+str(open_selling_order[0])+' - '+str(open_selling_order[1])+' to trader '+str(list_trader[index][0]))
-            logger.info('Trader '+str(index)+' ( '+str(list_trader[index][2])+' -> '+str(list_trader[index][2]+step_between_unit_sell_and_unit_price)+')') 
+            logger.info('Trader '+str(index)+' ( '+str(list_trader[index][2])+' -> '+str(round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2))+')') 
             is_order_mapped=True
             # Set up the trader with new status
             list_trader[index][3]=str(open_selling_order[0])
@@ -332,7 +334,7 @@ while(1==1):
                         volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe[0],persistenceHandler,step_between_unit_sell_and_unit_price)
                         logger.info("Volume to sell is :"+str(volume_buyed_to_sell))
                         if(volume_buyed_to_sell>0.0):
-                            unit_selling_price=list_trader[index][2]+step_between_unit_sell_and_unit_price
+                            unit_selling_price=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:
                             created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price)
@@ -360,7 +362,7 @@ while(1==1):
                         # Special notification if to give you benefits
                         if(flag_benefit):
                             try:
-                                benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,list_trader[index][2]+step_between_unit_sell_and_unit_price)
+                                benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2))
                                 todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
                                 logger.info("Todays Benefits are "+str(todays_benefits))
                                 notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[1])+"€ (in "+str(todays_benefits[0])+" trades)")
