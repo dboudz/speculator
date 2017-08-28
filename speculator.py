@@ -73,6 +73,7 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
         sum_buying_partial=0.0
         if(open_orders != None ):
             for item in open_orders:
+                print(str(item))
                 if (item[2]>0.0):
                     logger.info("89 Adding "+str(item[2])+" from "+str(item[0]))
                     sum_buying_partial=sum_buying_partial+item[2]
@@ -85,6 +86,13 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
             exit(1)
     else:
         logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
+
+
+def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_unit_price):
+    buy_trade=volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2)
+    fees=businessLogic.calculate_fee(volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2))
+    return round(buy_trade + fees,2)
+
 
 def budgetCalculation(list_trader,logs=False):
     logger.info("------Begin calculating the budget for each trader before buying----")
@@ -203,7 +211,6 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_an
     # Map selling order only if it fits with a trader
     for index in range(0,number_of_traders):
         # checking if selling price in between buy and sell price
-        print(str(open_selling_order[1]) +">"+str(list_trader[index][2])+" "+str(open_selling_order[1])+"<="+str(round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)))
         if(open_selling_order[1]>list_trader[index][2] and open_selling_order[1]<=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)):
             logger.info('Mapping order '+str(open_selling_order[0])+' - '+str(open_selling_order[1])+' to trader '+str(list_trader[index][0]))
             logger.info('Trader '+str(index)+' ( '+str(list_trader[index][2])+' -> '+str(round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2))+')') 
@@ -213,14 +220,14 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_an
             list_trader[index][4]=SELLING
             list_trader[index][5]=0.0
             # Engaged money is selling volume*unit buy_price + fees
-            list_trader[index][6]=open_selling_order[2]*list_trader[index][2]+ businessLogic.calculate_fee(open_selling_order[2]*list_trader[index][2])
+            list_trader[index][6]=calculatedEngagedMoney(open_selling_order[2],list_trader[index][2],step_between_unit_sell_and_unit_price)
         if(is_order_mapped):
             break;
     if is_order_mapped==False:
         logger.info('Order '+str(open_selling_order[0])+' is NOT MAPPED')
 
 # Calculate budget for further tests
-list_trader=budgetCalculation(list_trader)
+list_trader=budgetCalculation(list_trader,logs=True)
 
 
 # Check that budget available on exchange is compliant 
@@ -342,6 +349,8 @@ while(1==1):
                             list_trader[index][3]=str(created_selling_order)
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
+                            # Setting engaged money
+                            list_trader[index][6]=calculatedEngagedMoney(volume_buyed_to_sell,unit_selling_price,step_between_unit_sell_and_unit_price)
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                             break;
                     if(list_trader[index][3]==oe[0] and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
@@ -428,7 +437,7 @@ while(1==1):
         if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
             logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
             # calculate budget, get the right trader  and launch buying
-            list_trader=budgetCalculation(list_trader)
+            list_trader=budgetCalculation(list_trader,logs=True)
             
             #Check if the speculator has right to buy:
             if AUTHORIZATION_OF_BUYING==True and currency_actual_ask_price>=minimum_buying_price:
