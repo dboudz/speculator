@@ -446,7 +446,7 @@ while(1==1):
                         # Checking it trader is available:
                         if(list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]==WAITING):
                             # Calculate volume to buy
-                            volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])
+                            volume_to_buy=businessLogic.get_maximum_volume_to_buy_with_budget( round( list_trader[SELECTED_TRADER_ID_FOR_BUYING][5],list_trader[SELECTED_TRADER_ID_FOR_BUYING][2] ,2))
                             logger.info("Trader "+str(SELECTED_TRADER_ID_FOR_BUYING)+' was selected to buy at '+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][2])+" because market price is "+str(currency_actual_ask_price))
                             logger.info("          budget is going to be "+str(list_trader[SELECTED_TRADER_ID_FOR_BUYING][5])+"€")
                             logger.info("          buying volume :"+str(volume_to_buy))
