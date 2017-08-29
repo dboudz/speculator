@@ -129,7 +129,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
             if(len(validation)>0):
                 if(str(validation)=="['EService:Unavailable']"):
                     logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
-                    return secure_buy(volume,price,currency_crawling_name)
+                    return secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell)
                 else:
                     logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
                     notifier.notify("Fatal Error","Buying Order creation failed. Exiting "+str(validation))
@@ -196,7 +196,7 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
         if(len(validation)>0):
             if(str(validation)=="['EService:Unavailable']"):
                 logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
-                return secure_sell(volume,price,currency_crawling_name)
+                return secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell)
             else:
                 logger.error("Selling Order creation failed. Here is the req_result "+str(req_result))
                 notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
