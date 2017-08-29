@@ -59,84 +59,9 @@ def increment_sequence():
     sequence_number=sequence_number+1
     return sequence_number
 
-
-def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
-    logger.info('On initizalization or after cancel order, check if there is no missing selling order')
-    test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
-    sold_volume=0.0
-    for order in test_missing_selling_order:
-        sold_volume=sold_volume+order[2]
-    available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
-    if(abs(available_traded_money - (sold_volume+0.1))>=0.5):
-        
-        # Particular case : If there is a buying order partailly processed, amount can be slightly different:
-        logger.info("88 Checking for partial orders ")
-        sum_buying_partial=0.0
-        if(open_orders != None ):
-            for item in open_orders:
-                print(str(item))
-                if (item[2]>0.0):
-                    logger.info("89 Adding "+str(item[2])+" from "+str(item[0]))
-                    sum_buying_partial=sum_buying_partial+item[2]
-        logger.info("90 Sum partial order  "+str(sum_buying_partial))
-        if(sum_buying_partial>0):
-            logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
-        else:
-            logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-            exit(1)
-    else:
-        logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
-
-
-def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_unit_price):
-    buy_trade=volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2)
-    fees=businessLogic.calculate_fee(volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2))
-    engaged_money=math.ceil(buy_trade + fees)
-    logger.info("Volume buyed was "+str(volume) +" at "+str(round(unit_sell_price-step_between_unit_sell_and_unit_price,2) ))
-    logger.info("             fees were "+str(fees) )
-    logger.info("             so (ceiled) engaged money was "+str(float(round(buy_trade + fees,2))) )
-    return float(engaged_money)
-
-
-def budgetCalculation(list_trader,logs=False):
-    # Define the ratio of the above(s) free traders which is allowed by below traders
-    RATIO_OF_ABOVE_BUDGET_ALLOCATED=0.5
-    
-    logger.info("------Begin calculating the budget for each trader before buying----")
-    available_budget=0
-    for index in range(0,number_of_traders):
-        # Define budget available for current trader 
-        if(list_trader[index][4]==WAITING):
-            list_trader[index][5]=round( (available_budget * RATIO_OF_ABOVE_BUDGET_ALLOCATED ) + list_trader[index][1] ,2)
-            available_budget=available_budget+list_trader[index][1]
-        else:
-            list_trader[index][5]=0.0
-
-            # Engaged money
-            if(list_trader[index][6]>0 and list_trader[index][6]<available_budget):
-                logger.info(" * Engaged Budget is "+str(list_trader[index][6])+" and available budget is "+str(available_budget))
-                logger.info(" * available budget will be increased of  "+str(available_budget-list_trader[index][6]))
-                available_budget=available_budget-list_trader[index][6]
-            else:
-                logger.info(" Budget will be 0")
-                available_budget=0
-            
-            logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
-            logger.debug('Budget for above traders is going to be removed !')
-            for index_above_trader in range(index,-1,-1):
-                list_trader[index_above_trader][5]=0.0
-                logger.debug('Trader '+str(index_above_trader)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
-
-    # Display budget
-    if (logs==True):
-        logger.info("------Display of Final budget ----")
-        for index in range(0,number_of_traders):
-            logger.info('Trader '+str(index)+', buyer at '+str(list_trader[index][2])+' is in '+str.upper(list_trader[index][4])+' mode with a budget of '+str(list_trader[index][5])+" engaged money is "+str(list_trader[index][6]))
-        logger.info("------End of Budget Calculation----")
-    return list_trader
-
-# trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
+##################
+# TRADING SETUP  #
+##################
 allowed_budget=1051.0
 expected_gain_by_band=0.08
 number_of_traders=50
@@ -144,7 +69,8 @@ number_of_traders=50
 step_between_unit_sell_and_unit_price=0.10
 minimum_buying_price=11.0
 # project(48,0.28,0.067,46,1035)
-       
+  # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
+     
 list_trader=[]
 list_trader.append([increment_sequence(),28.0,15.90,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),28.0,15.80,None,WAITING,0.0,0.0])
@@ -201,6 +127,86 @@ list_trader.append([increment_sequence(),15.0,11.20,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),15.0,11.10,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),15.0,11.00,None,WAITING,0.0,0.0])
 
+
+
+
+
+def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
+    logger.info('On initizalization or after cancel order, check if there is no missing selling order')
+    test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
+    sold_volume=0.0
+    for order in test_missing_selling_order:
+        sold_volume=sold_volume+order[2]
+    available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
+    if(abs(available_traded_money - (sold_volume+0.1))>=0.5):
+        
+        # Particular case : If there is a buying order partailly processed, amount can be slightly different:
+        logger.info("88 Checking for partial orders ")
+        sum_buying_partial=0.0
+        if(open_orders != None ):
+            for item in open_orders:
+                print(str(item))
+                if (item[2]>0.0):
+                    logger.info("89 Adding "+str(item[2])+" from "+str(item[0]))
+                    sum_buying_partial=sum_buying_partial+item[2]
+        logger.info("90 Sum partial order  "+str(sum_buying_partial))
+        if(sum_buying_partial>0):
+            logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
+        else:
+            logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+            exit(1)
+    else:
+        logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
+
+
+def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_unit_price):
+    buy_trade=volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2)
+    fees=businessLogic.calculate_fee(volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2))
+    engaged_money=math.ceil(buy_trade + fees)
+    logger.info("Volume buyed was "+str(volume) +" at "+str(round(unit_sell_price-step_between_unit_sell_and_unit_price,2) ))
+    logger.info("             fees were "+str(fees) )
+    logger.info("             so (ceiled) engaged money was "+str(float(round(buy_trade + fees,2))) )
+    return float(engaged_money)
+
+# Ratio should be different
+def budgetCalculation(list_trader,number_of_traders,logs=False):
+    logger.info("------Begin calculating the budget for each trader before buying----")
+    available_budget=0
+    for index in range(0,number_of_traders):
+        # Define the ratio of the above(s) free traders which is allowed by below traders
+        RATIO_OF_ABOVE_BUDGET_ALLOCATED=round((index+1)/number_of_traders,2)
+        
+        if(list_trader[index][4]==WAITING):
+            list_trader[index][5]=round( (available_budget * RATIO_OF_ABOVE_BUDGET_ALLOCATED ) + list_trader[index][1] ,2)
+            available_budget=available_budget+list_trader[index][1]
+        else:
+            list_trader[index][5]=0.0
+
+            # Engaged money
+            if(list_trader[index][6]>0 and list_trader[index][6]<available_budget):
+                logger.info(" * Engaged Budget is "+str(list_trader[index][6])+" and available budget is "+str(available_budget))
+                logger.info(" * available budget will be increased of  "+str(available_budget-list_trader[index][6]))
+                available_budget=available_budget-list_trader[index][6]
+            else:
+                logger.info(" Budget will be 0")
+                available_budget=0
+            
+            logger.debug('Trader '+str(index)+' is in '+list_trader[index][4]+' mode and has no budget to provide ')
+            logger.debug('Budget for above traders is going to be removed !')
+            for index_above_trader in range(index,-1,-1):
+                list_trader[index_above_trader][5]=0.0
+                logger.debug('Trader '+str(index_above_trader)+' budget removed because  below Trader '+str(index)+' is in '+str(list_trader[index][4])+' mode')
+
+    # Display budget
+    if (logs==True):
+        logger.info("------Display of Final budget ----")
+        for index in range(0,number_of_traders):
+            logger.info('Trader '+str(index)+', buyer at '+str(list_trader[index][2])+' is in '+str.upper(list_trader[index][4])+' mode with a budget of '+str(list_trader[index][5])+" engaged money is "+str(list_trader[index][6]))
+        logger.info("------End of Budget Calculation----")
+    return list_trader
+
+
 # Check viability of configuration
 if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
     logger.error("Configuration of traders is not valid. Exiting")
@@ -245,7 +251,7 @@ for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_an
         logger.info('Order '+str(open_selling_order[0])+' is NOT MAPPED')
 
 # Calculate budget for further tests
-list_trader=budgetCalculation(list_trader,logs=True)
+list_trader=budgetCalculation(list_trader,number_of_traders,logs=True)
 
 
 # Check that budget available on exchange is compliant 
@@ -455,7 +461,7 @@ while(1==1):
         if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
             logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
             # calculate budget, get the right trader  and launch buying
-            list_trader=budgetCalculation(list_trader,logs=True)
+            list_trader=budgetCalculation(list_trader,number_of_traders,logs=True)
             
             #Check if the speculator has right to buy:
             if AUTHORIZATION_OF_BUYING==True and currency_actual_ask_price>=minimum_buying_price:
