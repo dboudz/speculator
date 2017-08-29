@@ -100,13 +100,16 @@ def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_uni
 
 
 def budgetCalculation(list_trader,logs=False):
+    # Define the ratio of the above(s) free traders which is allowed by below traders
+    RATIO_OF_ABOVE_BUDGET_ALLOCATED=0.5
+    
     logger.info("------Begin calculating the budget for each trader before buying----")
     available_budget=0
     for index in range(0,number_of_traders):
         # Define budget available for current trader 
         if(list_trader[index][4]==WAITING):
+            list_trader[index][5]=round( (available_budget * RATIO_OF_ABOVE_BUDGET_ALLOCATED ) + list_trader[index][1] ,2)
             available_budget=available_budget+list_trader[index][1]
-            list_trader[index][5]=available_budget
         else:
             list_trader[index][5]=0.0
 
