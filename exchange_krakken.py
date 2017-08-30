@@ -39,16 +39,16 @@ DONE=0
 NOT_DONE=1
 
 
-def get_buying_order_with_same_pattern_posterior_to(volume,price,timing,persistenceHandler,current_step_between_buy_and_sell):
+def get_buying_order_with_same_pattern_posterior_to(volume,price,timing,persistenceHandler,current_step_between_buy_and_sell,currency_order_name):
     # Searching order with same characteristics on open order /!\ created after timing
     logger.info(" Getting eventual open buying orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
-    open_orders=get_open_orders()
+    open_orders=get_single_open_orders(currency_order_name)
     time.sleep(5)
     oe_parameters=[]
     # Getting orders vol,price
-    for oeid in open_orders.keys():
-        if(open_orders.get(oeid).get('descr').get('type')=='buy' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price')) and (open_orders.get(oeid).get('opentm') > timing )):
-            oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
+    for item in open_orders:
+        if(item.get('type')=='buy' and volume==item.get('vol') and price==item.get('price') and item.get('opentm') > timing ):
+            oe_parameters.append((item.get('order_id'),item.get('vol'),item.get('price')))
     if(len(oe_parameters)>0):
         logger.info(" Founded buying orders with same characteristics in open order list:"+str(oe_parameters))
     else:
@@ -69,16 +69,16 @@ def get_buying_order_with_same_pattern_posterior_to(volume,price,timing,persiste
             logger.info(" No buying orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
-def get_selling_order_with_same_pattern_posterior_to(volume,price,timing,persistenceHandler,current_step_between_buy_and_sell):
+def get_selling_order_with_same_pattern_posterior_to(volume,price,timing,persistenceHandler,current_step_between_buy_and_sell,currency_order_name):
     # Searching order with same characteristics on open order /!\ created after timing
     logger.info(" Getting eventual open selling orders with same parameters (vol:"+str(volume)+" price"+str(price)+")")
-    open_orders=get_open_orders()
+    open_orders=get_single_open_orders(currency_order_name)
     time.sleep(5)
     oe_parameters=[]
     # Getting orders vol,price
-    for oeid in open_orders.keys():
-        if(open_orders.get(oeid).get('descr').get('type')=='sell' and volume==float(open_orders.get(oeid).get('vol')) and price==float(open_orders.get(oeid).get('descr').get('price')) and (open_orders.get(oeid).get('opentm') > timing )):
-            oe_parameters.append((oeid,float(open_orders.get(oeid).get('vol')),float(open_orders.get(oeid).get('descr').get('price'))))
+    for item in open_orders:
+        if(item.get('type')=='sell' and volume==item.get('vol') and price==item.get('price') and item.get('opentm') > timing ):
+            oe_parameters.append((item.get('order_id'),item.get('vol'),item.get('price')))
     if(len(oe_parameters)>0):
         logger.info(" Founded selling orders with same characteristics in open order list:"+str(oe_parameters))
     else:
@@ -99,7 +99,7 @@ def get_selling_order_with_same_pattern_posterior_to(volume,price,timing,persist
             logger.info(" No selling orders founded same characteristics  in closed order list :"+str(oe_parameters))
     return oe_parameters
 
-def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell):
+def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell,currency_order_name):
     status=NOT_DONE
     # Get unix time
     time_before_buy=get_server_unixtime()
@@ -107,12 +107,12 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
     logger.info("Secure buy stat at unix time "+str(time_before_buy))
     
     # Check for existing open orders
-    existing_open_orders=get_open_orders_ids_and_type_and_flag_partially_executed()
+    existing_open_orders=get_single_open_orders(currency_order_name)
     flag_existing_oe=False
     new_buying_order=''
     
     for oe in existing_open_orders:
-        if(oe[1]=='buy'):
+        if(oe.get('type')=='buy'):
             flag_existing_oe=True
             
     # If no existing open ordres, create order and wait until confirmation
@@ -129,7 +129,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
             if(len(validation)>0):
                 if(str(validation)=="['EService:Unavailable']"):
                     logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
-                    return secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell)
+                    return secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell,currency_order_name)
                 else:
                     logger.error("Buying Order creation failed. Here is the req_result "+str(req_result))
                     notifier.notify("Fatal Error","Buying Order creation failed. Exiting "+str(validation))
@@ -174,8 +174,20 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
         logger.error("Buying open orders id feels wrong ("+new_buying_order+")  Exiting ")
         notifier.notify("Fatal Error","Buying open orders id feels wrong ("+new_buying_order+")  Exiting ")
         exit(1)
-        
-    return new_buying_order
+    
+    
+    # Creating open_order dict object.
+    new_buying_order_dict={}
+    new_buying_order_dict['order_id']=new_buying_order
+    new_buying_order_dict['status']='open'
+    new_buying_order_dict['opentm']=time_before_buy
+    new_buying_order_dict['vol']=volume
+    new_buying_order_dict['vol_exec']=0.0
+    new_buying_order_dict['price']=price
+    new_buying_order_dict['type']='buy'
+    new_buying_order_dict['flag_buying_order_partially_executed']=False
+    
+    return new_buying_order_dict
 
     
 
@@ -312,36 +324,72 @@ def get_balance_for_currency(currency):
     for cur in list(values.get('result').keys()):
         if(cur==currency):
             return round(float(values.get('result').get(currency)),5)
-        
-def get_open_orders_ids():
-    return list(get_open_orders().keys())
+ 
+       
+#def get_open_orders_ids():
+#    return list(get_open_orders().keys())
 
 
-def get_open_orders_ids_and_type_and_flag_partially_executed():
-    list_open_orders=[]
-    dict_open_orders=get_open_orders()
-    for orderId in list(dict_open_orders.keys()):
-        executed_buying_volume=0.0
-        if(dict_open_orders.get(orderId).get('descr').get('type')=='buy'  and float(dict_open_orders.get(orderId).get('vol_exec')) >0.0):
-            executed_buying_volume=float(dict_open_orders.get(orderId).get('vol_exec'))
-        list_open_orders.append( [orderId,dict_open_orders.get(orderId).get('descr').get('type'),executed_buying_volume ])
-    return list_open_orders
+#def get_open_orders_ids_and_type_and_flag_partially_executed():
+#    list_open_orders=[]
+#    dict_open_orders=get_open_orders()
+#    for orderId in list(dict_open_orders.keys()):
+#        executed_buying_volume=0.0
+#        if(dict_open_orders.get(orderId).get('descr').get('type')=='buy'  and float(dict_open_orders.get(orderId).get('vol_exec')) >0.0):
+#            executed_buying_volume=float(dict_open_orders.get(orderId).get('vol_exec'))
+#        list_open_orders.append( [orderId,dict_open_orders.get(orderId).get('descr').get('type'),executed_buying_volume ])
+#    return list_open_orders
 
-def get_open_orders():
+
+
+# Single Method for Buying orders
+def get_single_open_orders(TRADED_CURRENCY):
     dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
-    return (dict_open_orders.get('result').get('open'))
+    list_open_orders=[]
+    
+    # Check if something goes wrong
+    if dict_open_orders==None:
+        logger.warn("get_single_open_orders, dict_open_orders is None. Recall")
+        return get_single_open_orders()
+    else:
+        # Create dict with attributes of the order, only if the currency match to the traded one
+        for oe in list(dict_open_orders.get('result').get('open').keys()):
+            if(dict_open_orders.get('result').get('open').get(oe).get('descr').get('pair')==TRADED_CURRENCY):
+                elem={}
+                elem['order_id']=oe
+                elem['status']=dict_open_orders.get('result').get('open').get(oe).get('status')
+                elem['opentm']=float(dict_open_orders.get('result').get('open').get(oe).get('opentm'))
+                elem['vol']=float(dict_open_orders.get('result').get('open').get(oe).get('vol'))
+                elem['vol_exec']=float(dict_open_orders.get('result').get('open').get(oe).get('vol_exec'))
+                elem['price']=float(dict_open_orders.get('result').get('open').get(oe).get('descr').get('price'))
+                elem['type']=dict_open_orders.get('result').get('open').get(oe).get('descr').get('type')
+                # create an attribute to help identify buying order partially executed
+                if( elem.get('vol_exec') > 0.0 and elem.get('type')=='buy'):
+                    elem['flag_buying_order_partially_executed']=True
+                else:
+                    elem['flag_buying_order_partially_executed']=False
+            list_open_orders.append(elem)
+    return list_open_orders
+            
+            
+        
+        
+        
+#def get_open_orders():
+#    dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
+#    return (dict_open_orders.get('result').get('open'))
   
-def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name):
-    list_open_orders_with_unit_sell_price=[]
-    open_orders=get_open_orders()
-    for oe in list(open_orders.keys()):
-        oe_currency=open_orders.get(oe).get('descr').get('pair')
-        oe_order_type=open_orders.get(oe).get('descr').get('type')
-        oe_unit_sell_price=float(open_orders.get(oe).get('descr').get('price'))
-        oe_volume=float(open_orders.get(oe).get('vol'))
-        if(oe_currency==currency_order_name and oe_order_type=='sell'):
-            list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price,oe_volume))
-    return list_open_orders_with_unit_sell_price
+#def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name):
+#    list_open_orders_with_unit_sell_price=[]
+#    open_orders=get_open_orders()
+#    for oe in list(open_orders.keys()):
+#        oe_currency=open_orders.get(oe).get('descr').get('pair')
+#        oe_order_type=open_orders.get(oe).get('descr').get('type')
+#        oe_unit_sell_price=float(open_orders.get(oe).get('descr').get('price'))
+#        oe_volume=float(open_orders.get(oe).get('vol'))
+#        if(oe_currency==currency_order_name and oe_order_type=='sell'):
+#            list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price,oe_volume))
+#    return list_open_orders_with_unit_sell_price
 
 def get_closed_order_volume_by_id(id_order,persistenceHandler,current_step_between_buy_and_sell):
     dict_closed_orders=get_closed_orders(persistenceHandler,current_step_between_buy_and_sell)

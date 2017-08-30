@@ -16,7 +16,6 @@ import math
 
 # TODO Creer des classes traders/order car la c'est de la pure MERDE
 # TODO Unifier les differentes methodes qui appellent open and close orders. Il y en a plein ca sert à rien
-# TODO Ajouter un consumed budget qui permettra en cas d'upgrade de bénéficier du budget sup
 # TODO SI N ORDRE DE VENTE MANQUE IL FAUT GERER CA ! cf requete unclosed trade
 # TODO Chaque appel de open ou closed order devrait amener a un update de la table close
 
@@ -41,7 +40,7 @@ logger.setLevel(logging.DEBUG)
 
 
 kraken.init()
-list_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
+list_open_orders=kraken.get_single_open_orders(CURRENCY_ORDER_NAME)
 DONE=0
 NOT_DONE=1
 
@@ -128,37 +127,45 @@ list_trader.append([increment_sequence(),15.0,11.10,None,WAITING,0.0,0.0])
 list_trader.append([increment_sequence(),15.0,11.00,None,WAITING,0.0,0.0])
 
 
-
-
-
-def safetyCheckOnTradingCurrencySellingOrder(open_orders=None):
+def safetyCheckOnTradingCurrencySellingOrder(open_orders,owned_volume_of_traded_money):
     logger.info('On initizalization or after cancel order, check if there is no missing selling order')
-    test_missing_selling_order=kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME)
     sold_volume=0.0
-    for order in test_missing_selling_order:
-        sold_volume=sold_volume+order[2]
-    available_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
-    if(abs(available_traded_money - (sold_volume+0.1))>=0.5):
+    for order in open_orders:
+        if(order.get('type')==SELLING):
+            sold_volume=sold_volume+order.get('vol')
+    if(abs(owned_volume_of_traded_money - (sold_volume+0.1))>=0.5):
         
-        # Particular case : If there is a buying order partailly processed, amount can be slightly different:
+        # Particular case : If there is a buying/selling order partially processed, amount can be slightly different:
         logger.info("88 Checking for partial orders ")
         sum_buying_partial=0.0
-        if(open_orders != None ):
-            for item in open_orders:
-                print(str(item))
-                if (item[2]>0.0):
-                    logger.info("89 Adding "+str(item[2])+" from "+str(item[0]))
-                    sum_buying_partial=sum_buying_partial+item[2]
+        for item in open_orders:
+            logger.debug(str(item))
+            if (item.get('vol_exec')>0.0):
+                logger.info("89 Adding "+str(item.get('vol_exec'))+" from order "+item.get('order_id'))
+                sum_buying_partial=sum_buying_partial+item.get('vol_exec')
         logger.info("90 Sum partial order  "+str(sum_buying_partial))
         if(sum_buying_partial>0):
             logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
         else:
-            logger.error(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+            logger.error(CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
             exit(1)
     else:
-        logger.info(CURRENCY_BALANCE_NAME+" available on exchange ("+str(available_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
-
+        logger.info(CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
+        
+    # Checking number of open buying orders :
+    counter_open_buying_order=0
+    for open_order in open_orders:
+        if(open_order.get('type')==BUYING):
+            counter_open_buying_order=counter_open_buying_order+1
+            
+    # Test number of buying orders
+    if(counter_open_buying_order>1):
+        logger.error("More than 1 buying order detected")
+        notifier.notify("Fatal Error","More than 1 buying order detected"+str(open_order))
+        logger.error("Exiting")
+        exit(1)    
+        
 
 def calculatedEngagedMoney(volume,unit_sell_price,step_between_unit_sell_and_unit_price):
     buy_trade=volume * round(unit_sell_price-step_between_unit_sell_and_unit_price,2)
@@ -217,38 +224,39 @@ else:
 
 
 ## Closing All buying orders (security)
-for order_with_type in list_open_orders_with_ids:
-    if(order_with_type[1]==BUYING):
-        logger.info("Buying Order "+str(order_with_type[0])+" is going to be cancel by speculator initialization")
-        if(kraken.secure_cancel_order(order_with_type[0])==DONE):
-            logger.info("Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
+for open_order in list_open_orders:
+    if(open_order.get('type')==BUYING):
+        logger.info("Buying Order "+str(open_order.get('order_id'))+" is going to be cancel by speculator initialization")
+        if(kraken.secure_cancel_order(open_order.get('order_id'))==DONE):
+            logger.info("Buying Order "+str(open_order.get('order_id'))+" was closed at initialization of speculator")
         else:
-            logger.error("Buying Order "+str(order_with_type[0])+" coundn't be closed at initialization of speculator")
-            notifier.notify('Fatal Error',"Buying Order "+str(order_with_type[0])+" was closed at initialization of speculator")
+            logger.error("Buying Order "+str(open_order.get('order_id'))+" coundn't be closed at initialization of speculator")
+            notifier.notify('Fatal Error',"Buying Order "+str(open_order.get('order_id'))+" was closed at initialization of speculator")
             exit(1)
+            
 ## Reinitializing buying list:
-list_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
+list_open_orders=kraken.get_single_open_orders(CURRENCY_ORDER_NAME)
 
 # Map current orders with traders.
-for open_selling_order in kraken.get_open_orders_selling_with_unit_sell_price_and_volume(CURRENCY_ORDER_NAME):
+for open_selling_order in list_open_orders:
     is_order_mapped=False
     # Map selling order only if it fits with a trader
     for index in range(0,number_of_traders):
         # checking if selling price in between buy and sell price
-        if(open_selling_order[1]>list_trader[index][2] and open_selling_order[1]<=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)):
-            logger.info('Mapping order '+str(open_selling_order[0])+' - '+str(open_selling_order[1])+' to trader '+str(list_trader[index][0]))
+        if(open_selling_order.get('price')>list_trader[index][2] and open_selling_order.get('price')<=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)):
+            logger.info('Mapping order '+open_selling_order.get('order_id')+' - '+str(open_selling_order.get('price'))+' to trader '+str(list_trader[index][0]))
             logger.info('Trader '+str(index)+' ( '+str(list_trader[index][2])+' -> '+str(round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2))+')') 
             is_order_mapped=True
             # Set up the trader with new status
-            list_trader[index][3]=str(open_selling_order[0])
+            list_trader[index][3]=open_selling_order.get('order_id')
             list_trader[index][4]=SELLING
             list_trader[index][5]=0.0
             # Engaged money is selling volume*unit buy_price + fees
-            list_trader[index][6]=calculatedEngagedMoney(open_selling_order[2],list_trader[index][2],step_between_unit_sell_and_unit_price)
+            list_trader[index][6]=calculatedEngagedMoney(open_selling_order.get('vol'),list_trader[index][2],step_between_unit_sell_and_unit_price)
         if(is_order_mapped):
             break;
     if is_order_mapped==False:
-        logger.info('Order '+str(open_selling_order[0])+' is NOT MAPPED')
+        logger.info('Order '+open_selling_order.get('order_id')+' is NOT MAPPED')
 
 # Calculate budget for further tests
 list_trader=budgetCalculation(list_trader,number_of_traders,logs=True)
@@ -266,7 +274,8 @@ else:
     logger.info("Euros available on exchange ("+str(test_available_budget)+") are enough to match actual configuration("+str(test_required_budget)+")")
 
 # Check if every unit of trading money are to sold
-safetyCheckOnTradingCurrencySellingOrder()
+owned_volume_of_traded_money=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
+safetyCheckOnTradingCurrencySellingOrder(list_open_orders,owned_volume_of_traded_money)
 
 
 logger.info("---------------------------------------------------")
@@ -296,34 +305,27 @@ while(1==1):
     # STEP 1 Check for closed Orders and perform corresponding actions
     ##################################################################
     # Getting fresh version of the list and compare
-    fresh_open_orders_ids_list=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
-    fresh_oe_id_list=[]
-    fresh_oe_buyint_id_list=[]
-    for elem in fresh_open_orders_ids_list:
-        fresh_oe_id_list.append(elem[0])
-        if(elem[1]==BUYING):
-            fresh_oe_buyint_id_list.append(elem[0])
-            
-    # Test number of buying orders
-    if(len(fresh_oe_buyint_id_list)>1):
-        logger.error("More than 1 buying order detected")
-        notifier.notify("Fatal Error","More than 1 buying order detected "+str(fresh_oe_buyint_id_list))
-        logger.error("Trying to cancel everything before shutdown")
-        for oetc in fresh_oe_buyint_id_list:
-            res=NOT_DONE
-            while(res!=DONE):
-                res=kraken.secure_cancel_order(oetc)
-        logger.error("Exiting")
-        exit(1)
+    owned_volume=-1.0
+    owned_volume_time1=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
+    fresh_open_orders=kraken.get_single_open_orders(CURRENCY_ORDER_NAME)
+    owned_volume_time2=kraken.get_balance_for_traded_currency(CURRENCY_BALANCE_NAME)
     
+    # Getting volume of traded money before and after getting orders. If this value is the same, safety check can be performed.
+    if(owned_volume_time1==owned_volume_time2):
+        owned_volume=owned_volume_time1
+    
+    fresh_oe_id_list=[]
+    for item in fresh_open_orders:
+        fresh_oe_id_list.append(item.get('order_id'))
+
     DO_STEP2=True
-    for oe in list_open_orders_with_ids:
-        if oe[0] not in fresh_oe_id_list:
-            logger.info('Order '+oe[0]+' is not in fresh open order list')
+    for oe in list_open_orders:
+        if oe.get('order_id') not in fresh_oe_id_list:
+            logger.info('Order '+oe.get('order_id')+' is not in fresh open order list')
             DO_STEP2=False
             # Get details about closed orders for notification
             closed_orders=kraken.get_closed_orders(persistenceHandler,step_between_unit_sell_and_unit_price)
-            coe=closed_orders.get(oe[0])
+            coe=closed_orders.get(oe.get('order_id'))
             price=float(coe.get('price'))
             volume=float(coe.get('vol'))
             status=str(coe.get('status'))
@@ -345,31 +347,30 @@ while(1==1):
                     specific_text=""
                     if(is_buying_order_canceled_and_partially_executed==True):
                         specific_text="PARTIALLY EXECUTED CANCEL "
-                    notifier.notify(specific_text+'Order '+oe[0]+' '+str.upper(status),descr)
+                    notifier.notify(specific_text+'Order '+oe.get('order_id')+' '+str.upper(status),descr)
 
-            logger.info('Order '+oe[0]+' '+str.upper(status)+" "+descr)
-            list_knowned_open_orders_with_ids=kraken.get_open_orders_ids_and_type_and_flag_partially_executed()
+            logger.info('Order '+oe.get('order_id')+' '+str.upper(status)+" "+descr)
             
             # If an BUY order was CLOSED( or CANCELED but partially processed), search the concerned speculator to create sell order
-            if(oe[1]==BUYING or oe[1]==SELLING):
-                logger.info("order "+str(oe[0])+" just closed, searching trader")
+            if(oe.get('type')==BUYING or oe.get('type')==SELLING):
+                logger.info("order "+str(oe.get('order_id'))+" just closed, searching trader")
                 for index in range(0,number_of_traders):
-                    if(list_trader[index][4]==BUYING and list_trader[index][3]==oe[0] and (status==CLOSED or is_buying_order_canceled_and_partially_executed==True) ):
-                        logger.info("1/ "+str(BUYING)+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                    if(list_trader[index][4]==BUYING and list_trader[index][3]==oe.get('order_id') and (status==CLOSED or is_buying_order_canceled_and_partially_executed==True) ):
+                        logger.info("1/ "+str(BUYING)+" order "+oe.get('order_id')+" was originally created by trader "+str(index)+".")
                         if(is_buying_order_canceled_and_partially_executed==True):
                             logger.info("- Specific case of selling order creation after cancelation of partially executed buying order")
                         ########################
                         # CREATING SELLING ORDER
                         ########################
                         # Get available amount of currency
-                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe[0],persistenceHandler,step_between_unit_sell_and_unit_price)
+                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe.get('order_id'),persistenceHandler,step_between_unit_sell_and_unit_price)
                         logger.info("Volume to sell is :"+str(volume_buyed_to_sell))
                         if(volume_buyed_to_sell>0.0):
                             unit_selling_price=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:
-                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price)
-                            fresh_open_orders_ids_list.append([str(created_selling_order),SELLING])
+                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price,CURRENCY_ORDER_NAME)
+                            fresh_open_orders.append([str(created_selling_order),SELLING])
                             list_trader[index][3]=str(created_selling_order)
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
@@ -377,8 +378,8 @@ while(1==1):
                             list_trader[index][6]=calculatedEngagedMoney(volume_buyed_to_sell,unit_selling_price,step_between_unit_sell_and_unit_price)
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                             break;
-                    if(list_trader[index][3]==oe[0] and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
-                        logger.info("2/ "+str(list_trader[index][4])+" order "+str(oe[0])+" was originally created by trader "+str(index)+".")
+                    if(list_trader[index][3]==oe.get('order_id') and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
+                        logger.info("2/ "+str(list_trader[index][4])+" order "+oe.get('order_id')+" was originally created by trader "+str(index)+".")
                         ####################################################
                         # MANAGE SELL ENJOYMENT, OR BUY CANCELATION
                         ####################################################
@@ -390,6 +391,7 @@ while(1==1):
                         list_trader[index][4]=WAITING
                         # Budget will be calculated in the iteration
                         list_trader[index][5]=0.0
+                        list_trader[index][6]=0.0
                         logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(WAITING))
                         
                         # Special notification if to give you benefits
@@ -406,14 +408,17 @@ while(1==1):
                         break;
 
     # Finally setup open order to freshest list
-    list_open_orders_with_ids=fresh_open_orders_ids_list
+    list_open_orders=fresh_open_orders
     time.sleep(15)
 
     
     if(DO_STEP2==True):
         
-        # Safety check
-        safetyCheckOnTradingCurrencySellingOrder(fresh_open_orders_ids_list)
+        # Safety check (only if owned_value > 0 (if =-1 it means that it change during time when we get open orders))
+        if(owned_volume>0.0):
+            safetyCheckOnTradingCurrencySellingOrder(list_open_orders,owned_volume)
+        else:
+            logger.info("Safety check is not going to be performed ( owned_volume="+str(owned_volume)+")")
         
         ##########################
         # Traders
@@ -486,9 +491,9 @@ while(1==1):
                             logger.info("          For further analysis, unix time is "+str(kraken_time))
                         
                             # create buying order
-                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price)
-                            logger.info("Buying order "+str(created_buying_order)+" was created")
-                            list_open_orders_with_ids.append([created_buying_order,BUYING])
+                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price,CURRENCY_ORDER_NAME)
+                            logger.info("Buying order "+created_buying_order.get('order_id')+" was created")
+                            list_open_orders.append(created_buying_order)
                             # /!\set up right status and cut budget setup selling order 
                             list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
                             list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
