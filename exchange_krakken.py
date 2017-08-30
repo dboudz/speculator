@@ -188,7 +188,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
         exit(1)
     
     
-    # Creating open_order dict object.
+    # Creating open_order dict object. (Few columns are wrong, but there is no impact)
     new_buying_order_dict={}
     new_buying_order_dict['order_id']=new_buying_order
     new_buying_order_dict['status']='open'
@@ -296,7 +296,6 @@ def public_call(function,parameters,logs=False):
         try:
             time.sleep(1)
             result=krakken_connection.query_public(function,parameters)
-            #logger.debug(str(result))
             status=DONE
         except Exception as e:
             logger.info(function+' public faced an error at try number '+str(cmpt)+ ' : Error '+str(e))
@@ -343,22 +342,6 @@ def get_balance_for_currency(currency):
         if(cur==currency):
             return round(float(values.get('result').get(currency)),5)
  
-       
-#def get_open_orders_ids():
-#    return list(get_open_orders().keys())
-
-
-#def get_open_orders_ids_and_type_and_flag_partially_executed():
-#    list_open_orders=[]
-#    dict_open_orders=get_open_orders()
-#    for orderId in list(dict_open_orders.keys()):
-#        executed_buying_volume=0.0
-#        if(dict_open_orders.get(orderId).get('descr').get('type')=='buy'  and float(dict_open_orders.get(orderId).get('vol_exec')) >0.0):
-#            executed_buying_volume=float(dict_open_orders.get(orderId).get('vol_exec'))
-#        list_open_orders.append( [orderId,dict_open_orders.get(orderId).get('descr').get('type'),executed_buying_volume ])
-#    return list_open_orders
-
-
 
 # Single Method for Buying orders
 def get_single_open_orders(TRADED_CURRENCY):
@@ -390,25 +373,6 @@ def get_single_open_orders(TRADED_CURRENCY):
     return list_open_orders
             
             
-        
-        
-        
-#def get_open_orders():
-#    dict_open_orders=exchange_call(PRIVACY_PRIVATE,'OpenOrders')
-#    return (dict_open_orders.get('result').get('open'))
-  
-#def get_open_orders_selling_with_unit_sell_price_and_volume(currency_order_name):
-#    list_open_orders_with_unit_sell_price=[]
-#    open_orders=get_open_orders()
-#    for oe in list(open_orders.keys()):
-#        oe_currency=open_orders.get(oe).get('descr').get('pair')
-#        oe_order_type=open_orders.get(oe).get('descr').get('type')
-#        oe_unit_sell_price=float(open_orders.get(oe).get('descr').get('price'))
-#        oe_volume=float(open_orders.get(oe).get('vol'))
-#        if(oe_currency==currency_order_name and oe_order_type=='sell'):
-#            list_open_orders_with_unit_sell_price.append((oe,oe_unit_sell_price,oe_volume))
-#    return list_open_orders_with_unit_sell_price
-
 def get_closed_order_volume_by_id(id_order,persistenceHandler,current_step_between_buy_and_sell):
     dict_closed_orders=get_closed_orders(persistenceHandler,current_step_between_buy_and_sell)
     for oe in list(dict_closed_orders.keys()):

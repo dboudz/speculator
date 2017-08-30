@@ -495,7 +495,7 @@ while(1==1):
                             logger.info("Buying order "+created_buying_order.get('order_id')+" was created")
                             list_open_orders.append(created_buying_order)
                             # /!\set up right status and cut budget setup selling order 
-                            list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order
+                            list_trader[SELECTED_TRADER_ID_FOR_BUYING][3]=created_buying_order.get('order_id')
                             list_trader[SELECTED_TRADER_ID_FOR_BUYING][4]=BUYING
                             list_trader[SELECTED_TRADER_ID_FOR_BUYING][5]=0.0
                             # setup buying mode to avoir other buy attempt
