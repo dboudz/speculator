@@ -161,6 +161,18 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
                          logger.warn(" sleep 3 second before next try")
                          time.sleep(3)
                          cmpt=cmpt+1
+                         
+                     # Manage infinite loop
+                     if(cmpt>0 and cmpt%15==0):
+                         save_time_before_buy=time_before_buy
+                         time_before_buy=time_before_buy-30
+                         logger.info("time_before_buy is going to be changed by 30s "+str(save_time_before_buy)+" -> "+str(time_before_buy))
+                         notifier.notify("Risk of infinite loop","time_before_buy is going to be changed by 30s "+str(save_time_before_buy)+" -> "+str(time_before_buy))
+                     if(cmpt==115):
+                         logger.info("time_before_buy is going to be changed by 30s "+str(save_time_before_buy)+" -> "+str(time_before_buy))
+                         notifier.notify("Risk of infinite loop","Exiting to avoid to be stuck in failed secure buy loop")
+
+                    
             else:
                 logger.error("107 Unmanaged case. shutdown.")
                 notifier.notify("Fatal Error","Unmanaged case "+str(e)+" Exiting.")
@@ -271,7 +283,10 @@ def private_call(function,parameters,logs=False):
             if(logs==True):
                 logger.info('Succes on request '+str(function))
         cmpt=cmpt+1
-    return result
+    if(result==None):
+        return private_call(function,parameters,logs)
+    else:
+        return result
 
 def public_call(function,parameters,logs=False):
     status=NOT_DONE
@@ -293,7 +308,10 @@ def public_call(function,parameters,logs=False):
             if(logs==True):
                 logger.info('Succes on request '+str(function))
         cmpt=cmpt+1
-    return result
+    if(result==None):
+        return private_call(function,parameters,logs)
+    else:
+        return result
 
 def exchange_call(privacy,function,parameters={}):
     if(privacy==PRIVACY_PRIVATE):
