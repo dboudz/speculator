@@ -7,13 +7,13 @@ setup(name='speculator',
       author='dboudz',
       url='https://github.com/dboudz/speculator',
       scripts=[
-            'businessLogic.py',
-            'exchange_krakken.py',
-	    'notifier.py',
-            'persistenceHandler.py',
-	    'speculator.py'
+            'bin/businessLogic.py',
+            'bin/exchange_krakken.py',
+	    'bin/notifier.py',
+            'bin/persistenceHandler.py',
+	    'bin/speculator.py'
            ],
-     packages=[
+     install_requires=[
             'krakenex',
             'pushbullet.py',
             'simplejson',
