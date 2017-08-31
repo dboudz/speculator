@@ -1,0 +1,11 @@
+setup.py
+bin/businessLogic.py
+bin/exchange_krakken.py
+bin/notifier.py
+bin/persistenceHandler.py
+bin/speculator.py
+speculator.egg-info/PKG-INFO
+speculator.egg-info/SOURCES.txt
+speculator.egg-info/dependency_links.txt
+speculator.egg-info/requires.txt
+speculator.egg-info/top_level.txt

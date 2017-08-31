@@ -1,0 +1,6 @@
+krakenex
+pushbullet.py
+simplejson
+pandas
+psycopg2
+SQLAlchemy
