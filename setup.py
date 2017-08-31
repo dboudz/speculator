@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-
+from setuptools import setup, find_packages
 setup(name='speculator',
       version='1.0',
       description='Python Distribution',
