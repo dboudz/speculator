@@ -13,5 +13,12 @@ setup(name='speculator',
             'persistenceHandler.py',
 	    'speculator.py'
            ],
-      packages=[],
+     packages=[
+            'krakenex',
+            'pushbullet.py',
+            'simplejson',
+            'pandas',
+            'psycopg2',
+            'SQLAlchemy' 
+     ],
      )
