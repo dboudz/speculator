@@ -1,1 +1,1 @@
-worker: speculator.py
+worker: python ./bin/speculator.py
