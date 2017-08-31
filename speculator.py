@@ -370,8 +370,8 @@ while(1==1):
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:             secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell)
                             created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price)
-                            fresh_open_orders.append([str(created_selling_order),SELLING])
-                            list_trader[index][3]=str(created_selling_order)
+                            fresh_open_orders.append(created_selling_order)
+                            list_trader[index][3]=created_selling_order.get('order_id')
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
                             # Setting engaged money

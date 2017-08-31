@@ -260,6 +260,17 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
         logger.error("Selling open orders id feels wrong ("+new_selling_order+")  Exiting ")
         notifier.notify("Fatal Error","Buying open orders id feels wrong ("+new_selling_order+")  Exiting ")
         exit(1)
+    
+    # Creating open_order dict object. (Few columns are wrong, but there is no impact)
+    new_selling_order_dict={}
+    new_selling_order_dict['order_id']=new_selling_order
+    new_selling_order_dict['status']='open'
+    new_selling_order_dict['opentm']=time_before_sell
+    new_selling_order_dict['vol']=volume
+    new_selling_order_dict['vol_exec']=0.0
+    new_selling_order_dict['price']=price
+    new_selling_order_dict['type']='sell'
+    new_selling_order_dict['flag_buying_order_partially_executed']=False    
     return new_selling_order
 
 
