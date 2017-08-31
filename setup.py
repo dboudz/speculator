@@ -6,5 +6,12 @@ setup(name='speculator',
       description='Python Distribution',
       author='dboudz',
       url='https://github.com/dboudz/speculator',
+      scripts=[
+            'businessLogic.py',
+            'exchange_krakken.py',
+	    'notifier.py',
+            'persistenceHandler.py',
+	    'speculator.py'
+           ]
       packages=[],
      )
