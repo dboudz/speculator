@@ -1,1 +1,1 @@
-worker: python speculator.py
+worker: speculator.py
