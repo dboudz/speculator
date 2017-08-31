@@ -12,6 +12,6 @@ setup(name='speculator',
 	    'notifier.py',
             'persistenceHandler.py',
 	    'speculator.py'
-           ]
+           ],
       packages=[],
      )
