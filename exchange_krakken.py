@@ -198,7 +198,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
     new_buying_order_dict['price']=price
     new_buying_order_dict['type']='buy'
     new_buying_order_dict['flag_buying_order_partially_executed']=False
-    
+    logger.debug("Returned buying order is "+str(new_buying_order_dict))
     return new_buying_order_dict
 
     
@@ -270,8 +270,9 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
     new_selling_order_dict['vol_exec']=0.0
     new_selling_order_dict['price']=price
     new_selling_order_dict['type']='sell'
-    new_selling_order_dict['flag_buying_order_partially_executed']=False    
-    return new_selling_order
+    new_selling_order_dict['flag_buying_order_partially_executed']=False  
+    logger.debug("Returned selling order is "+str(new_selling_order_dict))
+    return new_selling_order_dict
 
 
    
