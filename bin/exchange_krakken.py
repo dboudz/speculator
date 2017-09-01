@@ -147,7 +147,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
                  cmpt=0
                  while(status==NOT_DONE):
                      logger.warn(" Try "+str(cmpt)+" for getting open order")
-                     oeid_char=get_buying_order_with_same_pattern_posterior_to(volume,price,time_before_buy,persistenceHandler,current_step_between_buy_and_sell)
+                     oeid_char=get_buying_order_with_same_pattern_posterior_to(volume,price,time_before_buy,persistenceHandler,current_step_between_buy_and_sell,currency_order_name)
                      if(len(oeid_char)>0):
                          if(len(oeid_char))>1:
                              logger.error("More than 1 buying order with same parameters : "+str(oeid_char))
@@ -203,7 +203,7 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
 
     
 
-def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell):
+def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell,currency_order_name):
     status=NOT_DONE
     # Get unix time
     time_before_sell=get_server_unixtime()
@@ -220,7 +220,7 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
         if(len(validation)>0):
             if(str(validation)=="['EService:Unavailable']"):
                 logger.warn("111 Error message "+str(validation)+ " was encoutered re-do the secure buy call")
-                return secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell)
+                return secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell,currency_order_name)
             else:
                 logger.error("Selling Order creation failed. Here is the req_result "+str(req_result))
                 notifier.notify("Fatal Error","Selling Order creation failed. Exiting")
@@ -238,7 +238,7 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
              cmpt=0
              while(status==NOT_DONE):
                  logger.warn(" Try "+str(cmpt)+" for getting open order")
-                 oeid_char=get_selling_order_with_same_pattern_posterior_to(volume,price,time_before_sell,persistenceHandler,current_step_between_buy_and_sell)
+                 oeid_char=get_selling_order_with_same_pattern_posterior_to(volume,price,time_before_sell,persistenceHandler,current_step_between_buy_and_sell,currency_order_name)
                  if(len(oeid_char)>0):
                      if(len(oeid_char))>1:
                          logger.error("More than 1 selling order with same parameters : "+str(oeid_char))
