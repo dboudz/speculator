@@ -58,74 +58,36 @@ def increment_sequence():
     sequence_number=sequence_number+1
     return sequence_number
 
-##################
-# TRADING SETUP  #
-##################
-allowed_budget=1051.0
-expected_gain_by_band=0.08
-number_of_traders=50
-# NEVER CHANGE THIS ONE IF EXISTING SELLING ORDER
-step_between_unit_sell_and_unit_price=0.10
-minimum_buying_price=11.0
-# project(48,0.28,0.067,46,1035)
-  # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
-     
-list_trader=[]
-list_trader.append([increment_sequence(),28.0,15.90,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),28.0,15.80,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),27.0,15.70,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),27.0,15.60,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),27.0,15.50,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.40,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.30,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.20,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.10,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,15.00,None,WAITING,0.0,0.0])
-                                                  
-list_trader.append([increment_sequence(),25.0,14.90,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.80,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.70,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.60,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),24.0,14.50,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.40,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.30,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.20,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.10,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,14.00,None,WAITING,0.0,0.0])
-                                                  
-list_trader.append([increment_sequence(),22.0,13.90,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.80,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.70,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.60,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.50,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.40,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),21.0,13.30,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,13.20,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,13.10,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),19.0,13.00,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),25.0,12.90,None,WAITING,0.0,0.0])
-                                                  
-list_trader.append([increment_sequence(),25.0,12.80,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),22.0,12.70,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.60,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.50,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.40,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.30,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.20,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),18.0,12.10,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),17.0,12.00,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),17.0,11.90,None,WAITING,0.0,0.0])
-                                                  
-list_trader.append([increment_sequence(),16.0,11.80,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,11.70,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,11.60,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),16.0,11.50,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.40,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.30,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.20,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.10,None,WAITING,0.0,0.0])
-list_trader.append([increment_sequence(),15.0,11.00,None,WAITING,0.0,0.0])
+##############################################################
+# TRADING SETUP  
+##############################################################
+ALLOWED_BUDGET=float(os.environ['ALLOWED_BUDGET'])
+EXPECTED_BENEFIT_BY_TRADER=float(os.environ['EXPECTED_BENEFIT_BY_TRADER'])
+NB_OF_TRADERS=int(os.environ['NB_OF_TRADERS'])
+STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE=float(os.environ['STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE'])
+MIN_BUYING_PRICE=float(os.environ['MIN_BUYING_PRICE'])
+MAX_BUYING_PRICE=float(os.environ['MAX_BUYING_PRICE'])
 
+BUDGET_BY_TRADER_LIST=os.environ['BUDGET_BY_TRADER_LIST']
+temp=BUDGET_BY_TRADER_LIST.split(',')
+BUDGET_BY_TRADER_LIST = []
+for item in temp:
+    BUDGET_BY_TRADER_LIST.append(float(item))
+
+list_trader=[]
+buying_price=MAX_BUYING_PRICE
+for index in range(0,NB_OF_TRADERS):
+    # trader (integerId,budget(€),buy_unit_price,buying_order,Status,available_budget,engaged_budget
+    list_trader.append([increment_sequence(),BUDGET_BY_TRADER_LIST[index],buying_price,None,WAITING,0.0,0.0])
+    buying_price=round(buying_price-STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,1)
+if(list_trader[NB_OF_TRADERS-1][2]!=MIN_BUYING_PRICE):
+    logger.error("Something wrong in configuration, minimum buying price ("+str(MIN_BUYING_PRICE)+")  different from settings ("+str(list_trader[NB_OF_TRADERS-1][2])+")")
+    exit(1)
+
+##################################################################
+# COMMON FUNCTIONS
+##################################################################
+    
 
 def safetyCheckOnTradingCurrencySellingOrder(open_orders,owned_volume_of_traded_money):
     logger.info('On initizalization or after cancel order, check if there is no missing selling order')
@@ -185,7 +147,7 @@ def budgetCalculation(list_trader,number_of_traders,logs=False):
         RATIO_OF_ABOVE_BUDGET_ALLOCATED=round((index+1)/number_of_traders,2)
         
         if(list_trader[index][4]==WAITING):
-            list_trader[index][5]=round( (available_budget * RATIO_OF_ABOVE_BUDGET_ALLOCATED ) + list_trader[index][1] ,2)
+            list_trader[index][5]=round( (available_budget * RATIO_OF_ABOVE_BUDGET_ALLOCATED ) + list_trader[index][1] ,1)
             available_budget=available_budget+list_trader[index][1]
         else:
             list_trader[index][5]=0.0
@@ -215,7 +177,7 @@ def budgetCalculation(list_trader,number_of_traders,logs=False):
 
 
 # Check viability of configuration
-if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),number_of_traders,list_trader,step_between_unit_sell_and_unit_price,expected_gain_by_band,allowed_budget)):
+if(False==businessLogic.check_traders_configuration(kraken.get_balance_EUR(),NB_OF_TRADERS,list_trader,STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,EXPECTED_BENEFIT_BY_TRADER,ALLOWED_BUDGET)):
     logger.error("Configuration of traders is not valid. Exiting")
     notifier.notify('Fatal Error',"Configuration of traders is not valid. Exiting")
     exit(1)
@@ -241,29 +203,29 @@ list_open_orders=kraken.get_single_open_orders(CURRENCY_ORDER_NAME)
 for open_selling_order in list_open_orders:
     is_order_mapped=False
     # Map selling order only if it fits with a trader
-    for index in range(0,number_of_traders):
+    for index in range(0,NB_OF_TRADERS):
         # checking if selling price in between buy and sell price
-        if(open_selling_order.get('price')>list_trader[index][2] and open_selling_order.get('price')<=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)):
+        if(open_selling_order.get('price')>list_trader[index][2] and open_selling_order.get('price')<=round(list_trader[index][2]+STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,2)):
             logger.info('Mapping order '+open_selling_order.get('order_id')+' - '+str(open_selling_order.get('price'))+' to trader '+str(list_trader[index][0]))
-            logger.info('Trader '+str(index)+' ( '+str(list_trader[index][2])+' -> '+str(round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2))+')') 
+            logger.info('Trader '+str(index)+' ( '+str(list_trader[index][2])+' -> '+str(round(list_trader[index][2]+STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,2))+')') 
             is_order_mapped=True
             # Set up the trader with new status
             list_trader[index][3]=open_selling_order.get('order_id')
             list_trader[index][4]=SELLING
             list_trader[index][5]=0.0
             # Engaged money is selling volume*unit buy_price + fees
-            list_trader[index][6]=calculatedEngagedMoney(open_selling_order.get('vol'),list_trader[index][2],step_between_unit_sell_and_unit_price)
+            list_trader[index][6]=calculatedEngagedMoney(open_selling_order.get('vol'),list_trader[index][2],STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE)
         if(is_order_mapped):
             break;
     if is_order_mapped==False:
         logger.info('Order '+open_selling_order.get('order_id')+' is NOT MAPPED')
 
 # Calculate budget for further tests
-list_trader=budgetCalculation(list_trader,number_of_traders,logs=True)
+list_trader=budgetCalculation(list_trader,NB_OF_TRADERS,logs=True)
 
 
 # Check that budget available on exchange is compliant 
-test_required_budget=list_trader[number_of_traders-1][5]
+test_required_budget=list_trader[NB_OF_TRADERS-1][5]
 test_available_budget=kraken.get_balance_EUR()
 
 if(test_available_budget<test_required_budget):
@@ -324,7 +286,7 @@ while(1==1):
             logger.info('Order '+oe.get('order_id')+' is not in fresh open order list')
             DO_STEP2=False
             # Get details about closed orders for notification
-            closed_orders=kraken.get_closed_orders(persistenceHandler,step_between_unit_sell_and_unit_price)
+            closed_orders=kraken.get_closed_orders(persistenceHandler,STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE)
             coe=closed_orders.get(oe.get('order_id'))
             price=float(coe.get('price'))
             volume=float(coe.get('vol'))
@@ -354,7 +316,7 @@ while(1==1):
             # If an BUY order was CLOSED( or CANCELED but partially processed), search the concerned speculator to create sell order
             if(oe.get('type')==BUYING or oe.get('type')==SELLING):
                 logger.info("order "+str(oe.get('order_id'))+" just closed, searching trader")
-                for index in range(0,number_of_traders):
+                for index in range(0,NB_OF_TRADERS):
                     if(list_trader[index][4]==BUYING and list_trader[index][3]==oe.get('order_id') and (status==CLOSED or is_buying_order_canceled_and_partially_executed==True) ):
                         logger.info("1/ "+str(BUYING)+" order "+oe.get('order_id')+" was originally created by trader "+str(index)+".")
                         if(is_buying_order_canceled_and_partially_executed==True):
@@ -363,19 +325,19 @@ while(1==1):
                         # CREATING SELLING ORDER
                         ########################
                         # Get available amount of currency
-                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe.get('order_id'),persistenceHandler,step_between_unit_sell_and_unit_price)
+                        volume_buyed_to_sell=kraken.get_closed_order_volume_by_id(oe.get('order_id'),persistenceHandler,STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE)
                         logger.info("Volume to sell is :"+str(volume_buyed_to_sell))
                         if(volume_buyed_to_sell>0.0):
-                            unit_selling_price=round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2)
+                            unit_selling_price=round(list_trader[index][2]+STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,2)
                             logger.info("Unit sell price is:"+str(unit_selling_price))
                             # Selling order:             secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_step_between_buy_and_sell,CURRENCY_ORDER_NAME)
-                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price,CURRENCY_ORDER_NAME)
+                            created_selling_order=kraken.secure_sell(volume_buyed_to_sell,unit_selling_price,CURRENCY_CRAWLED_NAME,persistenceHandler,STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,CURRENCY_ORDER_NAME)
                             fresh_open_orders.append(created_selling_order)
                             list_trader[index][3]=created_selling_order.get('order_id')
                             list_trader[index][4]=SELLING
                             list_trader[index][5]=0.0
                             # Setting engaged money
-                            list_trader[index][6]=calculatedEngagedMoney(volume_buyed_to_sell,unit_selling_price,step_between_unit_sell_and_unit_price)
+                            list_trader[index][6]=calculatedEngagedMoney(volume_buyed_to_sell,unit_selling_price,STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE)
                             logger.info("Trader "+str(list_trader[index][0])+" is now in mode"+str(list_trader[index][4])+" with order "+str(list_trader[index][3])+". Budget is :"+str(list_trader[index][5]))
                             break;
                     if(list_trader[index][3]==oe.get('order_id') and ((list_trader[index][4]==SELLING) or ((list_trader[index][4]==BUYING) and (status==CANCELED)))):
@@ -397,7 +359,7 @@ while(1==1):
                         # Special notification if to give you benefits
                         if(flag_benefit):
                             try:
-                                benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,round(list_trader[index][2]+step_between_unit_sell_and_unit_price,2))
+                                benefits=businessLogic.estimate_benefits(list_trader[index][2],volume,round(list_trader[index][2]+STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,2))
                                 todays_benefits=businessLogic.calculate_today_benefits(persistenceHandler.get_todays_benefits())
                                 logger.info("Todays Benefits are "+str(todays_benefits))
                                 notifier.notify(";) Congrats","If configuration did t change, Benefits are little bit under "+str(benefits)+"€\nTotal for today :"+str(todays_benefits[1])+"€ (in "+str(todays_benefits[0])+" trades)")
@@ -428,7 +390,7 @@ while(1==1):
         # Check if a trader is buying, else set up to buy
         EXISTS_OPEN_BUYING_ORDERS=False
         BUYING_TRADER_ID=-1
-        for index in range(0,number_of_traders):
+        for index in range(0,NB_OF_TRADERS):
             if list_trader[index][4]==BUYING:
                 EXISTS_OPEN_BUYING_ORDERS=True
                 BUYING_TRADER_ID=list_trader[index][0]
@@ -466,14 +428,14 @@ while(1==1):
         if(IS_TREND_GROWING==True and EXISTS_OPEN_BUYING_ORDERS==False):
             logger.info("Market is OK, and no buying orders open : time to shop a little bit ! ")
             # calculate budget, get the right trader  and launch buying
-            list_trader=budgetCalculation(list_trader,number_of_traders,logs=True)
+            list_trader=budgetCalculation(list_trader,NB_OF_TRADERS,logs=True)
             
             #Check if the speculator has right to buy:
-            if AUTHORIZATION_OF_BUYING==True and currency_actual_ask_price>=minimum_buying_price:
+            if AUTHORIZATION_OF_BUYING==True and currency_actual_ask_price>=MIN_BUYING_PRICE:
                 logger.info("Remember : Speculator is allowed to trade")
                 # /!\ check from lowest trader to higher trader is essential
                 SELECTED_TRADER_ID_FOR_BUYING=-1
-                for index in range(number_of_traders-1,-1,-1):
+                for index in range(NB_OF_TRADERS-1,-1,-1):
                     # If trader's buy price is higher than value price we have the right trader
                     if(list_trader[index][2]>=currency_actual_ask_price):
                         # index of selected trader is index+1 (lower )
@@ -491,7 +453,7 @@ while(1==1):
                             logger.info("          For further analysis, unix time is "+str(kraken_time))
                         
                             # create buying order
-                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME,persistenceHandler,step_between_unit_sell_and_unit_price,CURRENCY_ORDER_NAME)
+                            created_buying_order=kraken.secure_buy(volume_to_buy,list_trader[SELECTED_TRADER_ID_FOR_BUYING][2],CURRENCY_CRAWLED_NAME,persistenceHandler,STEP_BETWEEN_UNIT_SELL_AND_UNIT_PRICE,CURRENCY_ORDER_NAME)
                             logger.info("Buying order "+created_buying_order.get('order_id')+" was created")
                             list_open_orders.append(created_buying_order)
                             # /!\set up right status and cut budget setup selling order 
