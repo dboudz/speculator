@@ -19,6 +19,7 @@ setup(name='speculator',
             'simplejson',
             'pandas',
             'psycopg2',
-            'SQLAlchemy' 
+            'SQLAlchemy',
+	    'telepot',
      ],
      )
