@@ -319,6 +319,7 @@ def public_call(function,parameters,logs=False):
             if(logs==True):
                 logger.info('Succes on request '+str(function))
         cmpt=cmpt+1
+    print(str(result))
     if(result==None):
         return private_call(function,parameters,logs)
     else:
