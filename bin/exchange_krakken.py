@@ -351,6 +351,7 @@ def get_balance_EUR():
 
 def get_balance_for_currency(currency):
     values=exchange_call(PRIVACY_PRIVATE,'Balance')
+    print("values "+str(values))
     for cur in list(values.get('result').keys()):
         if(cur==currency):
             return round(float(values.get('result').get(currency)),5)
