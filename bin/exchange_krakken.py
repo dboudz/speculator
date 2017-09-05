@@ -350,7 +350,6 @@ def get_balance_EUR():
 
 def get_balance_for_currency(currency):
     values=exchange_call(PRIVACY_PRIVATE,'Balance')
-    print("values "+str(values))
     for cur in list(values.get('result').keys()):
         if(cur==currency):
             return round(float(values.get('result').get(currency)),5)
@@ -419,7 +418,6 @@ def secure_cancel_order(order_id):
         try:
             logger.info(function+' :try number '+str(cmpt)+' for '+str(function))
             result=krakken_connection.query_private('CancelOrder',req_data)
-            print(result)
             if(len(result.get('error'))>0):
                 #{'error': [], 'result': {'count': 1}}
                 error_type=result.get('error')[0]
