@@ -169,10 +169,9 @@ def secure_buy(volume,price,currency_crawling_name,persistenceHandler,current_st
                          logger.info("time_before_buy is going to be changed by 30s "+str(save_time_before_buy)+" -> "+str(time_before_buy))
                          notifier.notify("Risk of infinite loop","time_before_buy is going to be changed by 30s "+str(save_time_before_buy)+" -> "+str(time_before_buy))
                      if(cmpt==115):
-                         logger.info("time_before_buy is going to be changed by 30s "+str(save_time_before_buy)+" -> "+str(time_before_buy))
+                         logger.info("Risk of infinite loop Exiting to avoid to be stuck in failed secure buy loop")
                          notifier.notify("Risk of infinite loop","Exiting to avoid to be stuck in failed secure buy loop")
-
-                    
+                         exit(1)
             else:
                 logger.error("107 Unmanaged case. shutdown.")
                 notifier.notify("Fatal Error","Unmanaged case "+str(e)+" Exiting.")

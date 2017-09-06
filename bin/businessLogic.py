@@ -76,6 +76,7 @@ def get_maximum_volume_to_buy_with_budget(budget,unit_price):
 
 
 # LCT project(26,0.28,0.05,42.5,1035)
+# ETC project(50,0.1,0.08,18,1000)
 def project(nb_traders	,step_between_traders,minimal_trade_benefit,max_unit_buy_price,budget):
     # Check viability : check minimal budget for highest trader
     budget_to_test=budget
