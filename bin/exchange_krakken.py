@@ -237,6 +237,10 @@ def secure_sell(volume,price,currency_crawling_name,persistenceHandler,current_s
              cmpt=0
              while(status==NOT_DONE):
                  logger.warn(" Try "+str(cmpt)+" for getting open order")
+                 
+                 if(cmpt%20==0):
+                     notifier.notify("Risk of infinite loop","on Selling order creation")
+                 
                  oeid_char=get_selling_order_with_same_pattern_posterior_to(volume,price,time_before_sell,persistenceHandler,current_step_between_buy_and_sell,currency_order_name)
                  if(len(oeid_char)>0):
                      if(len(oeid_char))>1:

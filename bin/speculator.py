@@ -101,11 +101,10 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders,owned_volume_of_traded_
         logger.info("88 Checking for partial orders ")
         sum_buying_partial=0.0
         for item in open_orders:
-            logger.debug(str(item))
             if (item.get('vol_exec')>0.0):
                 logger.info("89 Adding "+str(item.get('vol_exec'))+" from order "+item.get('order_id'))
                 sum_buying_partial=sum_buying_partial+item.get('vol_exec')
-        logger.info("90 Sum partial order  "+str(sum_buying_partial))
+        logger.info("90 Sum partial order  "+str(sum_buying_partial)+" sum of owned_volume_of_traded_money="+str(sum_buying_partial) )
         if(sum_buying_partial>0):
             logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
         else:
