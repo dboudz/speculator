@@ -99,18 +99,31 @@ def safetyCheckOnTradingCurrencySellingOrder(open_orders,owned_volume_of_traded_
         
         # Particular case : If there is a buying/selling order partially processed, amount can be slightly different:
         logger.info("88 Checking for partial orders ")
-        sum_buying_partial=0.0
+        sum_buying_partial_selling=0.0
+        sum_buying_partial_buying=0.0
         for item in open_orders:
             if (item.get('vol_exec')>0.0):
-                logger.info("89 Adding "+str(item.get('vol_exec'))+" from order "+item.get('order_id'))
-                sum_buying_partial=sum_buying_partial+item.get('vol_exec')
-        logger.info("90 Sum partial order  "+str(sum_buying_partial)+" sum of owned_volume_of_traded_money="+str(owned_volume_of_traded_money) +" sum of sold coins="+str(sold_volume))
-        if(sum_buying_partial>0):
-            logger.info(CURRENCY_BALANCE_NAME+" Sanity check detect open order partially executed")
-        else:
-            logger.error(CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
-            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are not all in sell mode ("+str(sold_volume)+"). Probably a missing sell order")
+                if(item.get('type')==SELLING):
+                    logger.info("89-1 Adding "+str(item.get('vol_exec'))+" from SELLING order "+item.get('order_id'))
+                    sum_buying_partial_selling=sum_buying_partial_selling+item.get('vol_exec')
+                else:
+                    logger.info("89-2 Adding "+str(item.get('vol_exec'))+" from BUYING order "+item.get('order_id'))
+                    sum_buying_partial_buying=sum_buying_partial_buying+item.get('vol_exec')
+                    
+        logger.info(" Sum partial BUYING  order  "+str(sum_buying_partial_buying))
+        logger.info(" Sum partial SELLING order  "+str(sum_buying_partial_selling))
+        logger.info(" Sum of owned_volume_of_traded_money="+str(owned_volume_of_traded_money))
+        logger.info(" Sum of sold coins="+str(sold_volume))
+        logger.info(" Real sold ="+str(sold_volume - sum_buying_partial_selling + sum_buying_partial_buying))
+        
+        
+        if(abs(owned_volume_of_traded_money - (round( (sold_volume - sum_buying_partial_selling + sum_buying_partial_buying) ,1) ) )>=0.1):
+            logger.info(CURRENCY_BALANCE_NAME+" Sanity check error (Even with partial orders")
+            notifier.notify('Safety Check failed',CURRENCY_BALANCE_NAME+" Sanity check error (Even with partial orders)")
             exit(1)
+        else:
+            logger.info(CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are all in sell mode ("+str(round( (sold_volume - sum_buying_partial_selling + sum_buying_partial_buying) ,1))+").Good to go.")
+
     else:
         logger.info(CURRENCY_BALANCE_NAME+" owned volume on exchange ("+str(owned_volume_of_traded_money)+") are all in sell mode ("+str(sold_volume)+").Good to go.")
         
